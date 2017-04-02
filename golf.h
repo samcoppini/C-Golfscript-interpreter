@@ -44,6 +44,7 @@ void array_push(Array *arr, Item item);
 
 // builtin.c
 void builtin_period();
+void builtin_print();
 void builtin_semicolon();
 
 // item.c

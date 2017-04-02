@@ -6,6 +6,12 @@ void builtin_period() {
   stack_push(item);
 }
 
+void builtin_print() {
+  Item item = stack_pop();
+  output_item(&item);
+  free_item(&item);
+}
+
 void builtin_semicolon() {
   Item item = stack_pop();
   free_item(&item);

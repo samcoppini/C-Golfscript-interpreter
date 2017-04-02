@@ -11,6 +11,7 @@ void init_interpreter() {
   definitions = new_map();
   map_set(&definitions, ".", make_builtin(builtin_period));
   map_set(&definitions, ";", make_builtin(builtin_semicolon));
+  map_set(&definitions, "print", make_builtin(builtin_print));
 }
 
 void stack_push(Item item) {
@@ -60,6 +61,12 @@ String next_token(String *str, uint32_t *code_pos) {
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
     } while (isdigit(c));
+  }
+  else if (isalpha(c)) {
+    do {
+      string_add_char(&token, c);
+      c = str->str_data[++(*code_pos)];
+    } while (isalnum(c));
   }
   else {
     string_add_char(&token, c);
