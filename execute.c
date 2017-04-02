@@ -12,6 +12,8 @@ void init_interpreter() {
   map_set(&definitions, ".", make_builtin(builtin_period));
   map_set(&definitions, ";", make_builtin(builtin_semicolon));
   map_set(&definitions, "print", make_builtin(builtin_print));
+  map_set(&definitions, "n", make_string("\"\n\""));
+  map_set(&definitions, "puts", make_string("print n print"));
 }
 
 void stack_push(Item item) {
@@ -99,6 +101,9 @@ void execute_string(String *str) {
 void execute_item(Item *item) {
   if (item->type == TYPE_FUNCTION) {
     item->function();
+  }
+  else if (item->type == TYPE_STRING) {
+    execute_string(&item->str_val);
   }
 }
 
