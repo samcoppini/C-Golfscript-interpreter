@@ -70,6 +70,24 @@ String next_token(String *str, uint32_t *code_pos) {
       c = str->str_data[++(*code_pos)];
     } while (isalnum(c));
   }
+  else if (c == '{') {
+    int brace_level = 1;
+    do {
+      string_add_char(&token, c);
+      c = str->str_data[++(*code_pos)];
+      if (c == '{')
+        brace_level++;
+      else if (c == '}')
+        brace_level--;
+    } while (brace_level > 0 && *code_pos < str->length);
+
+    *code_pos += 1;
+
+    if (*code_pos > str->length) {
+      fprintf(stderr, "Error! Unmatched { encountered in the code!\n");
+      exit(1);
+    }
+  }
   else {
     string_add_char(&token, c);
     *code_pos += 1;
@@ -94,6 +112,9 @@ void execute_string(String *str) {
     else if (tok.str_data[0] == '"') {
       stack_push(make_string(tok.str_data + 1));
     }
+    else if (tok.str_data[0] == '{') {
+      stack_push(make_block(tok.str_data + 1));
+    }
     free(tok.str_data);
   }
 }
@@ -102,7 +123,7 @@ void execute_item(Item *item) {
   if (item->type == TYPE_FUNCTION) {
     item->function();
   }
-  else if (item->type == TYPE_STRING) {
+  else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
     execute_string(&item->str_val);
   }
 }

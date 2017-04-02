@@ -50,6 +50,7 @@ void builtin_semicolon();
 // item.c
 Item make_integer(int64_t int_val);
 Item make_string(char *str_val);
+Item make_block(char *str_val);
 Item make_builtin(void (*function)());
 Item make_copy(Item *item);
 void free_item(Item *item);

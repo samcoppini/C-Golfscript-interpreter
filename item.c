@@ -12,6 +12,11 @@ Item make_string(char *str_val) {
   return item;
 }
 
+Item make_block(char *str_val) {
+  Item item = {TYPE_BLOCK, .str_val = create_string(str_val)};
+  return item;
+}
+
 Item make_builtin(void (*function)()) {
   Item item = {TYPE_FUNCTION, .function = function};
   return item;
@@ -24,14 +29,14 @@ Item make_copy(Item *item) {
 
   if (item->type == TYPE_INTEGER)
     new_item.int_val = item->int_val;
-  else if (item->type == TYPE_STRING)
+  else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK)
     new_item.str_val = create_string(item->str_val.str_data);
 
   return new_item;
 }
 
 void free_item(Item *item) {
-  if (item->type == TYPE_STRING) {
+  if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
     free(item->str_val.str_data);
   }
 }
@@ -42,5 +47,8 @@ void output_item(Item *item) {
   }
   else if (item->type == TYPE_STRING) {
     printf("%s", item->str_val);
+  }
+  else if (item->type == TYPE_BLOCK) {
+    printf("{%s}", item->str_val);
   }
 }
