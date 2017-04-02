@@ -20,6 +20,7 @@ typedef struct Item {
   enum Type type;
   union {
     int64_t int_val;
+    String str_val;
   };
 } Item;
 
@@ -34,6 +35,7 @@ void array_push(Array *arr, Item item);
 
 // item.c
 Item make_integer(int64_t int_val);
+Item make_string(char *str_val);
 void output_item(Item *item);
 
 // execute.c
@@ -44,6 +46,7 @@ void output_final_stack();
 
 // string.c
 String new_string();
+String create_string(char *str);
 void string_add_char(String *str, char c);
 String read_file_to_string(FILE *file);
 
