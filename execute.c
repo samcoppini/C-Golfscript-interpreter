@@ -9,6 +9,7 @@ static Map definitions;
 void init_interpreter() {
   stack = new_array();
   definitions = new_map();
+  map_set(&definitions, ".", make_builtin(builtin_period));
   map_set(&definitions, ";", make_builtin(builtin_semicolon));
 }
 

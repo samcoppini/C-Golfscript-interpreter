@@ -17,6 +17,19 @@ Item make_builtin(void (*function)()) {
   return item;
 }
 
+Item make_copy(Item *item) {
+  Item new_item;
+
+  new_item.type = item->type;
+
+  if (item->type == TYPE_INTEGER)
+    new_item.int_val = item->int_val;
+  else if (item->type == TYPE_STRING)
+    new_item.str_val = create_string(item->str_val.str_data);
+
+  return new_item;
+}
+
 void free_item(Item *item) {
   if (item->type == TYPE_STRING) {
     free(item->str_val.str_data);
