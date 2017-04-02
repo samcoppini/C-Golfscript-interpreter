@@ -4,12 +4,25 @@
 
 static Array stack;
 
-void init_stack() {
+static Map definitions;
+
+void init_interpreter() {
   stack = new_array();
+  definitions = new_map();
+  map_set(&definitions, ";", make_builtin(builtin_semicolon));
 }
 
 void stack_push(Item item) {
   array_push(&stack, item);
+}
+
+Item stack_pop() {
+  if (stack.length == 0) {
+    fprintf(stderr, "Error! Cannot pop from empty stack!\n");
+    exit(1);
+  }
+  stack.length--;
+  return stack.items[stack.length];
 }
 
 // Return the next token in the string from the given code position
@@ -60,7 +73,11 @@ void execute_string(String *str) {
 
   while (code_pos < str->length) {
     String tok = next_token(str, &code_pos);
-    if (isdigit(tok.str_data[0]) || (tok.str_data[0] == '-' && tok.length > 1))
+    if (map_has(&definitions, tok.str_data)) {
+      execute_item(map_get(&definitions, tok.str_data));
+    }
+    else if (isdigit(tok.str_data[0]) ||
+             (tok.str_data[0] == '-' && tok.length > 1))
     {
       stack_push(make_integer(atoll(tok.str_data)));
     }
@@ -68,6 +85,12 @@ void execute_string(String *str) {
       stack_push(make_string(tok.str_data + 1));
     }
     free(tok.str_data);
+  }
+}
+
+void execute_item(Item *item) {
+  if (item->type == TYPE_FUNCTION) {
+    item->function();
   }
 }
 

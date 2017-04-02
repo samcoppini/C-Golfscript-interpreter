@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
   String code = read_file_to_string(file);
   fclose(file);
-  init_stack();
+  init_interpreter();
   execute_string(&code);
   output_final_stack();
   free(code.str_data);
