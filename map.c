@@ -74,6 +74,7 @@ void map_set(Map *map, char *key, Item item) {
 
   while (map->keys[slot] != NULL) {
     if (strcmp(map->keys[slot], key) == 0) {
+      free_item(&map->items[slot]);
       map->items[slot] = item;
       return;
     }

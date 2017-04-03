@@ -131,6 +131,20 @@ void execute_string(String *str) {
     if (map_has(&definitions, tok.str_data)) {
       execute_item(map_get(&definitions, tok.str_data));
     }
+    else if (tok.str_data[0] == ':') {
+      if (stack.length == 0) {
+        fprintf(stderr, "Unable to define from empty stack!\n");
+        exit(1);
+      }
+      if (code_pos >= str->length) {
+        fprintf(stderr, "Error! No token to assign to!\n");
+        exit(1);
+      }
+      Item top_item = make_copy(&stack.items[stack.length - 1]);
+      String to_define = next_token(str, &code_pos);
+      map_set(&definitions, to_define.str_data, top_item);
+      free(to_define.str_data);
+    }
     else if (isdigit(tok.str_data[0]) ||
              (tok.str_data[0] == '-' && tok.length > 1))
     {
@@ -150,8 +164,11 @@ void execute_item(Item *item) {
   if (item->type == TYPE_FUNCTION) {
     item->function();
   }
-  else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
+  else if (item->type == TYPE_BLOCK) {
     execute_string(&item->str_val);
+  }
+  else {
+    stack_push(make_copy(item));
   }
 }
 
