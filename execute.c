@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include "golf.h"
 
-static Array stack;
+Array stack;
+Array bracket_stack;
 
 static Map definitions;
 
 void init_interpreter() {
   stack = new_array();
+  bracket_stack = new_array();
+
   definitions = new_map();
+  map_set(&definitions, "[", make_builtin(builtin_lbracket));
+  map_set(&definitions, "]", make_builtin(builtin_rbracket));
   map_set(&definitions, ".", make_builtin(builtin_period));
   map_set(&definitions, ";", make_builtin(builtin_semicolon));
   map_set(&definitions, "print", make_builtin(builtin_print));
@@ -26,6 +31,12 @@ Item stack_pop() {
     exit(1);
   }
   stack.length--;
+
+  for (uint32_t i = 0; i < bracket_stack.length; i++) {
+    if (stack.length < bracket_stack.items[i].int_val)
+      bracket_stack.items[i].int_val = stack.length;
+  }
+
   return stack.items[stack.length];
 }
 

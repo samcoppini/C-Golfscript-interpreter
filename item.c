@@ -17,6 +17,11 @@ Item make_block(char *str_val) {
   return item;
 }
 
+Item make_array() {
+  Item item = {TYPE_ARRAY, .arr_val = new_array()};
+  return item;
+}
+
 Item make_builtin(void (*function)()) {
   Item item = {TYPE_FUNCTION, .function = function};
   return item;
@@ -31,6 +36,12 @@ Item make_copy(Item *item) {
     new_item.int_val = item->int_val;
   else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK)
     new_item.str_val = create_string(item->str_val.str_data);
+  else if (item->type == TYPE_ARRAY) {
+    new_item.arr_val = new_array();
+    for (uint32_t i = 0; i < item->arr_val.length; i++) {
+      array_push(&new_item.arr_val, make_copy(&item->arr_val.items[i]));
+    }
+  }
 
   return new_item;
 }
@@ -38,6 +49,12 @@ Item make_copy(Item *item) {
 void free_item(Item *item) {
   if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
     free(item->str_val.str_data);
+  }
+  else if (item->type == TYPE_ARRAY) {
+    for (uint32_t i = 0; i < item->arr_val.length; i++) {
+      free_item(&item->arr_val.items[i]);
+    }
+    free(item->arr_val.items);
   }
 }
 
@@ -50,5 +67,10 @@ void output_item(Item *item) {
   }
   else if (item->type == TYPE_BLOCK) {
     printf("{%s}", item->str_val);
+  }
+  else if (item->type == TYPE_ARRAY) {
+    for (uint32_t i = 0; i < item->arr_val.length; i++) {
+      output_item(&item->arr_val.items[i]);
+    }
   }
 }

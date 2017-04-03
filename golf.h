@@ -18,19 +18,22 @@ typedef struct String {
   uint32_t length, allocated;
 } String;
 
+struct Item;
+
+typedef struct Array {
+  struct Item *items;
+  uint32_t length, allocated;
+} Array;
+
 typedef struct Item {
   enum Type type;
   union {
     int64_t int_val;
     String str_val;
+    Array arr_val;
     void (*function)();
   };
 } Item;
-
-typedef struct Array {
-  Item *items;
-  uint32_t length, allocated;
-} Array;
 
 typedef struct Map {
   char **keys;
@@ -43,14 +46,17 @@ Array new_array();
 void array_push(Array *arr, Item item);
 
 // builtin.c
+void builtin_lbracket();
 void builtin_period();
 void builtin_print();
+void builtin_rbracket();
 void builtin_semicolon();
 
 // item.c
 Item make_integer(int64_t int_val);
 Item make_string(char *str_val);
 Item make_block(char *str_val);
+Item make_array();
 Item make_builtin(void (*function)());
 Item make_copy(Item *item);
 void free_item(Item *item);
