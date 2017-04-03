@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "golf.h"
 
 Array stack;
@@ -9,6 +10,15 @@ static Map definitions;
 
 void init_interpreter() {
   stack = new_array();
+
+  if (isatty(STDIN_FILENO)) {
+    stack_push(make_string(""));
+  }
+  else {
+    Item first_item = {TYPE_STRING, .str_val = read_file_to_string(stdin)};
+    stack_push(first_item);
+  }
+
   bracket_stack = new_array();
 
   definitions = new_map();
