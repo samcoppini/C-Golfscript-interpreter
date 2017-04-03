@@ -170,7 +170,7 @@ void builtin_lparen() {
     stack_push(new_item);
   }
   else if (item.type == TYPE_ARRAY) {
-    if (item.str_val.length == 0) {
+    if (item.arr_val.length == 0) {
       fprintf(stderr, "Error! Unable to uncons from empty array");
       exit(1);
     }
@@ -239,6 +239,39 @@ void builtin_rbracket() {
   }
   stack.length = first_item;
   stack_push(array);
+}
+
+void builtin_rparen() {
+  Item item = stack_pop();
+
+  if (item.type == TYPE_INTEGER) {
+    item.int_val++;
+    stack_push(item);
+  }
+  else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
+    if (item.str_val.length == 0) {
+      fprintf(stderr, "Error! Unable to uncons from empty %s!",
+              item.type == TYPE_STRING ? "string": "block");
+      exit(1);
+    }
+    String *str = &item.str_val;
+    Item new_item = make_integer(str->str_data[str->length - 1]);
+    str->length -= 1;
+    str->str_data[str->length] = '\0';
+
+    stack_push(item);
+    stack_push(new_item);
+  }
+  else if (item.type == TYPE_ARRAY) {
+    if (item.arr_val.length == 0) {
+      fprintf(stderr, "Error! Unable to uncons from empty array");
+      exit(1);
+    }
+    Item new_item = item.arr_val.items[item.arr_val.length - 1];
+    item.arr_val.length -= 1;
+    stack_push(item);
+    stack_push(new_item);
+  }
 }
 
 void builtin_semicolon() {
