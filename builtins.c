@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "golf.h"
 
 extern Array stack;
@@ -47,4 +48,22 @@ void builtin_rbracket() {
 void builtin_semicolon() {
   Item item = stack_pop();
   free_item(&item);
+}
+
+void builtin_tilde() {
+  Item item = stack_pop();
+  if (item.type == TYPE_INTEGER) {
+    item.int_val = ~item.int_val;
+    stack_push(item);
+  }
+  else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
+    execute_string(&item.str_val);
+    free(item.str_val.str_data);
+  }
+  else if (item.type == TYPE_ARRAY) {
+    for (uint32_t i = 0; i < item.arr_val.length; i++) {
+      stack_push(item.arr_val.items[i]);
+    }
+    free(item.arr_val.items);
+  }
 }
