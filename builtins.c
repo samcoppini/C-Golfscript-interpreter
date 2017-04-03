@@ -29,6 +29,12 @@ void builtin_backtick() {
   free_item(&item);
 }
 
+void builtin_exclamation() {
+  Item item = stack_pop();
+  stack_push(make_integer(!item_boolean(&item)));
+  free_item(&item);
+}
+
 void builtin_lbracket() {
   array_push(&bracket_stack, make_integer(stack.length));
 }

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "golf.h"
@@ -92,6 +93,23 @@ String get_literal(Item *item) {
     string_add_char(&str, ']');
   }
   return str;
+}
+
+bool item_boolean(Item *item) {
+  switch (item->type) {
+    case TYPE_INTEGER:
+      return item->int_val != 0;
+
+    case TYPE_STRING:
+    case TYPE_BLOCK:
+      return item->str_val.length != 0;
+
+    case TYPE_ARRAY:
+      return item->arr_val.length != 0;
+
+    default:
+      assert(false);
+  }
 }
 
 void free_item(Item *item) {

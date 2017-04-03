@@ -49,6 +49,7 @@ void array_push(Array *arr, Item item);
 void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
+void builtin_exclamation();
 void builtin_lbracket();
 void builtin_period();
 void builtin_print();
@@ -64,6 +65,7 @@ Item make_array();
 Item make_builtin(void (*function)());
 Item make_copy(Item *item);
 String get_literal(Item *item);
+bool item_boolean(Item *item);
 void free_item(Item *item);
 void output_item(Item *item);
 
