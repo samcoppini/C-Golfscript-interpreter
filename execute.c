@@ -25,6 +25,7 @@ void init_interpreter() {
 
   map_set(&definitions, "n",    make_block("\"\n\""));
   map_set(&definitions, "puts", make_block("print n print"));
+  map_set(&definitions, "p",    make_block("`puts"));
 }
 
 void stack_push(Item item) {
