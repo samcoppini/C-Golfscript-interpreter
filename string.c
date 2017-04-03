@@ -21,6 +21,14 @@ String create_string(char *to_copy) {
   return str;
 }
 
+void string_reverse(String *str) {
+  for (uint32_t i = 0; i < str->length / 2; i++) {
+    char temp = str->str_data[i];
+    str->str_data[i] = str->str_data[str->length - i - 1];
+    str->str_data[str->length - i - 1] = temp;
+  }
+}
+
 void string_add_char(String *str, char c) {
   if (str->length + 1 >= str->allocated) {
     str->allocated <<= 1;
@@ -28,6 +36,18 @@ void string_add_char(String *str, char c) {
   }
   str->str_data[str->length++] = c;
   str->str_data[str->length] = '\0';
+}
+
+void string_add_str(String *str, char *to_append) {
+  size_t append_len = strlen(to_append);
+  if (str->length + append_len >= str->allocated) {
+    while (str->length + append_len >= str->allocated) {
+      str->allocated <<= 1;
+    }
+    str->str_data = realloc(str->str_data, str->allocated);
+  }
+  strcat(str->str_data + str->length, to_append);
+  str->length += append_len;
 }
 
 String read_file_to_string(FILE *file) {

@@ -22,6 +22,13 @@ void builtin_backslash() {
   stack_push(item2);
 }
 
+void builtin_backtick() {
+  Item item = stack_pop();
+  Item item_str = {TYPE_STRING, .str_val = get_literal(&item)};
+  stack_push(item_str);
+  free_item(&item);
+}
+
 void builtin_lbracket() {
   array_push(&bracket_stack, make_integer(stack.length));
 }

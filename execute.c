@@ -14,6 +14,7 @@ void init_interpreter() {
   definitions = new_map();
   map_set(&definitions, "@",     make_builtin(builtin_at));
   map_set(&definitions, "\\",    make_builtin(builtin_backslash));
+  map_set(&definitions, "`",     make_builtin(builtin_backtick));
   map_set(&definitions, "[",     make_builtin(builtin_lbracket));
   map_set(&definitions, ".",     make_builtin(builtin_period));
   map_set(&definitions, "]",     make_builtin(builtin_rbracket));

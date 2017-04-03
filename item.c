@@ -46,6 +46,54 @@ Item make_copy(Item *item) {
   return new_item;
 }
 
+String get_literal(Item *item) {
+  String str = new_string();
+  if (item->type == TYPE_INTEGER) {
+    int64_t int_val = item->int_val;
+    if (int_val < 0)
+      int_val *= -1;
+    else if (int_val == 0)
+      string_add_char(&str, '0');
+    while (int_val > 0) {
+      string_add_char(&str, '0' + (int_val % 10));
+      int_val /= 10;
+    }
+    if (item->int_val < 0)
+      string_add_char(&str, '-');
+    string_reverse(&str);
+  }
+  else if (item->type == TYPE_STRING) {
+    string_add_char(&str, '"');
+    for (uint32_t i = 0; i < item->str_val.length; i++) {
+      if (item->str_val.str_data[i] == '"')
+        string_add_str(&str, "\\\"");
+      else if (item->str_val.str_data[i] == '\\')
+        string_add_str(&str, "\\\\");
+      else
+        string_add_char(&str, item->str_val.str_data[i]);
+    }
+    string_add_char(&str, '"');
+  }
+  else if (item->type == TYPE_BLOCK) {
+    string_add_char(&str, '{');
+    string_add_str(&str, item->str_val.str_data);
+    string_add_char(&str, '}');
+  }
+  else if (item->type == TYPE_ARRAY) {
+    string_add_char(&str, '[');
+    for (uint32_t i = 0; i < item->arr_val.length; i++) {
+      String item_string = get_literal(&item->arr_val.items[i]);
+      string_add_str(&str, item_string.str_data);
+      free(item_string.str_data);
+      if (i + 1 < item->arr_val.length) {
+        string_add_char(&str, ' ');
+      }
+    }
+    string_add_char(&str, ']');
+  }
+  return str;
+}
+
 void free_item(Item *item) {
   if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
     free(item->str_val.str_data);

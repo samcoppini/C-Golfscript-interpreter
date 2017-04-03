@@ -48,6 +48,7 @@ void array_push(Array *arr, Item item);
 // builtin.c
 void builtin_at();
 void builtin_backslash();
+void builtin_backtick();
 void builtin_lbracket();
 void builtin_period();
 void builtin_print();
@@ -62,6 +63,7 @@ Item make_block(char *str_val);
 Item make_array();
 Item make_builtin(void (*function)());
 Item make_copy(Item *item);
+String get_literal(Item *item);
 void free_item(Item *item);
 void output_item(Item *item);
 
@@ -82,7 +84,9 @@ Item *map_get(Map *map, char *key);
 // string.c
 String new_string();
 String create_string(char *str);
+void string_reverse(String *str);
 void string_add_char(String *str, char c);
+void string_add_str(String *str, char *to_append);
 String read_file_to_string(FILE *file);
 
 #endif
