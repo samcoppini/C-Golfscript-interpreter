@@ -121,6 +121,12 @@ String next_token(String *str, uint32_t *code_pos) {
       exit(1);
     }
   }
+  else if (c == '#') {
+    do {
+      string_add_char(&token, c);
+      c = str->str_data[++(*code_pos)];
+    } while (c != '\n' && *code_pos < str->length);
+  }
   else {
     string_add_char(&token, c);
     *code_pos += 1;
