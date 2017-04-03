@@ -52,6 +52,20 @@ String next_token(String *str, uint32_t *code_pos) {
   char c = str->str_data[*code_pos];
   if (c == '"') {
     do {
+      if (c == '\\') {
+        c = str->str_data[++(*code_pos)];
+        switch (c) {
+          case 'a': c = '\a';   break;
+          case 'b': c = '\b';   break;
+          case 'e': c = '\x1b'; break;
+          case 'f': c = '\f';   break;
+          case 'n': c = '\n';   break;
+          case 'r': c = '\r';   break;
+          case 's': c =  ' ';   break;
+          case 't': c = '\t';   break;
+          case 'v': c = '\v';   break;
+        }
+      }
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
     } while (c != '"' && *code_pos < str->length);
