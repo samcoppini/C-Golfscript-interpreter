@@ -2,7 +2,7 @@
 #include <string.h>
 #include "golf.h"
 
-#define MAP_INIT_SIZE 8
+#define MAP_INIT_SIZE 64
 #define MAP_MAX_LOAD_FACTOR 0.6
 
 // Implements the djb2 hash function
