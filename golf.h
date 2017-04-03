@@ -44,6 +44,7 @@ typedef struct Map {
 // array.c
 Array new_array();
 void array_push(Array *arr, Item item);
+void array_subtract(Array *array, Array *to_subtract);
 
 // builtin.c
 void builtin_abs();
@@ -53,6 +54,7 @@ void builtin_backtick();
 void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();
+void builtin_minus();
 void builtin_period();
 void builtin_plus();
 void builtin_print();
@@ -71,6 +73,7 @@ Item make_builtin(void (*function)());
 Item make_copy(Item *item);
 String get_literal(Item *item);
 bool item_boolean(Item *item);
+bool items_equal(Item *item1, Item *item2);
 void free_item(Item *item);
 void output_item(Item *item);
 String array_to_string(Item *array);
@@ -96,6 +99,7 @@ String create_string(char *str);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
+void string_subtract(String *str, String *to_subtract);
 String int_to_string(int64_t int_val);
 String read_file_to_string(FILE *file);
 

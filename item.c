@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "golf.h"
 
 Item make_integer(int64_t int_val) {
@@ -96,6 +97,31 @@ bool item_boolean(Item *item) {
 
     case TYPE_ARRAY:
       return item->arr_val.length != 0;
+
+    default:
+      assert(false);
+  }
+}
+
+bool items_equal(Item *item1, Item *item2) {
+  if (item1->type != item2->type)
+    return false;
+  switch (item1->type) {
+    case TYPE_INTEGER:
+      return item1->int_val == item2->int_val;
+
+    case TYPE_STRING:
+    case TYPE_BLOCK:
+      return strcmp(item1->str_val.str_data, item2->str_val.str_data) == 0;
+
+    case TYPE_ARRAY:
+      if (item1->arr_val.length != item2->arr_val.length)
+        return false;
+      for (uint32_t i = 0; i < item1->arr_val.length; i++) {
+        if (!items_equal(&item1->arr_val.items[i], &item2->arr_val.items[i]))
+          return false;
+      }
+      return true;
 
     default:
       assert(false);

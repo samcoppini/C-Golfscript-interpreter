@@ -50,6 +50,25 @@ void string_add_str(String *str, char *to_append) {
   str->length += append_len;
 }
 
+void string_subtract(String *str, String *to_subtract) {
+  bool subtracted_chars[256] = {0};
+  for (uint32_t i = 0; i < to_subtract->length; i++) {
+    subtracted_chars[(unsigned) to_subtract->str_data[i]] = true;
+  }
+  uint32_t chars_removed = 0;
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (subtracted_chars[(unsigned) str->str_data[i]]) {
+      chars_removed++;
+      continue;
+    }
+    else {
+      str->str_data[i - chars_removed] = str->str_data[i];
+    }
+  }
+  str->length -= chars_removed;
+  str->str_data[str->length] = '\0';
+}
+
 String int_to_string(int64_t int_val) {
   String str = new_string();
   bool was_negative = int_val < 0;
