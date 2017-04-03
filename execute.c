@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include "golf.h"
 
@@ -37,15 +38,18 @@ void init_interpreter() {
   map_set(&definitions, ")",     make_builtin(builtin_rparen));
   map_set(&definitions, ";",     make_builtin(builtin_semicolon));
   map_set(&definitions, "~",     make_builtin(builtin_tilde));
-  map_set(&definitions, "if",    make_builtin(builtin_if));
   map_set(&definitions, "abs",   make_builtin(builtin_abs));
+  map_set(&definitions, "if",    make_builtin(builtin_if));
   map_set(&definitions, "print", make_builtin(builtin_print));
+  map_set(&definitions, "rand",  make_builtin(builtin_rand));
   map_set(&definitions, "until", make_builtin(builtin_until));
   map_set(&definitions, "while", make_builtin(builtin_while));
 
   map_set(&definitions, "n",    make_block("\"\n\""));
   map_set(&definitions, "puts", make_block("print n print"));
   map_set(&definitions, "p",    make_block("`puts"));
+
+  srand(time(NULL));
 }
 
 void stack_push(Item item) {

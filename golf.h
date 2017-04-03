@@ -62,6 +62,7 @@ void builtin_minus();
 void builtin_period();
 void builtin_plus();
 void builtin_print();
+void builtin_rand();
 void builtin_rbracket();
 void builtin_rparen();
 void builtin_semicolon();

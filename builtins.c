@@ -224,6 +224,18 @@ void builtin_print() {
   free_item(&item);
 }
 
+void builtin_rand() {
+  Item item = stack_pop();
+  if (item.type != TYPE_INTEGER) {
+    fprintf(stderr, "Error! rand requires an integer!\n");
+    exit(1);
+  }
+  else {
+    item.int_val = rand() % item.int_val;
+    stack_push(item);
+  }
+}
+
 void builtin_rbracket() {
   uint32_t first_item;
   if (bracket_stack.length == 0) {
