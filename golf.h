@@ -53,6 +53,7 @@ void builtin_ampersand();
 void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
+void builtin_comma();
 void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();

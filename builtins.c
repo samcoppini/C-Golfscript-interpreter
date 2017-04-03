@@ -62,6 +62,47 @@ void builtin_backtick() {
   free_item(&item);
 }
 
+void builtin_comma() {
+  Item item = stack_pop();
+  if (item.type == TYPE_INTEGER) {
+    Item array = make_array();
+    for (int64_t i = 0; i < item.int_val; i++) {
+      array_push(&array.arr_val, make_integer(i));
+    }
+    stack_push(array);
+  }
+  else if (item.type == TYPE_STRING) {
+    stack_push(make_integer(item.str_val.length));
+  }
+  else if (item.type == TYPE_ARRAY) {
+    stack_push(make_integer(item.arr_val.length));
+  }
+  else if (item.type == TYPE_BLOCK) {
+    Item to_map = stack_pop();
+    if (to_map.type != TYPE_ARRAY) {
+      fprintf(stderr, "Error! Operand for , must be array!\n");
+      exit(1);
+    }
+    uint32_t items_removed = 0;
+    for (uint32_t i = 0; i < to_map.arr_val.length; i++) {
+      stack_push(make_copy(&to_map.arr_val.items[i]));
+      execute_string(&item.str_val);
+      Item mapped_item = stack_pop();
+      if (item_boolean(&mapped_item)) {
+        to_map.arr_val.items[i - items_removed] = to_map.arr_val.items[i];
+      }
+      else {
+        items_removed++;
+        free_item(&to_map.arr_val.items[i]);
+      }
+      free_item(&mapped_item);
+    }
+    to_map.arr_val.length -= items_removed;
+    stack_push(to_map);
+  }
+  free_item(&item);
+}
+
 void builtin_exclamation() {
   Item item = stack_pop();
   stack_push(make_integer(!item_boolean(&item)));

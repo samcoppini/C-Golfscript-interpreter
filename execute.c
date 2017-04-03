@@ -26,6 +26,7 @@ void init_interpreter() {
   map_set(&definitions, "@",     make_builtin(builtin_at));
   map_set(&definitions, "\\",    make_builtin(builtin_backslash));
   map_set(&definitions, "`",     make_builtin(builtin_backtick));
+  map_set(&definitions, ",",     make_builtin(builtin_comma));
   map_set(&definitions, "!",     make_builtin(builtin_exclamation));
   map_set(&definitions, "[",     make_builtin(builtin_lbracket));
   map_set(&definitions, "-",     make_builtin(builtin_minus));
