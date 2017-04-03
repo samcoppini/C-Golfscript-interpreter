@@ -4,6 +4,19 @@
 extern Array stack;
 extern Array bracket_stack;
 
+void builtin_abs() {
+  Item item = stack_pop();
+  if (item.type == TYPE_INTEGER) {
+    if (item.int_val < 0)
+      item.int_val *= -1;
+    stack_push(item);
+  }
+  else {
+    fprintf(stderr, "Error! Invalid type for abs function!\n");
+    exit(1);
+  }
+}
+
 void builtin_at() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
