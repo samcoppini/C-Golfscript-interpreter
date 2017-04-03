@@ -29,6 +29,7 @@ void init_interpreter() {
   map_set(&definitions, ",",     make_builtin(builtin_comma));
   map_set(&definitions, "!",     make_builtin(builtin_exclamation));
   map_set(&definitions, "[",     make_builtin(builtin_lbracket));
+  map_set(&definitions, "(",     make_builtin(builtin_lparen));
   map_set(&definitions, "-",     make_builtin(builtin_minus));
   map_set(&definitions, ".",     make_builtin(builtin_period));
   map_set(&definitions, "+",     make_builtin(builtin_plus));

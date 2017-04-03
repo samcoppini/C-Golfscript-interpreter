@@ -148,6 +148,42 @@ void builtin_minus() {
   stack_push(item2);
 }
 
+void builtin_lparen() {
+  Item item = stack_pop();
+
+  if (item.type == TYPE_INTEGER) {
+    item.int_val--;
+    stack_push(item);
+  }
+  else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
+    if (item.str_val.length == 0) {
+      fprintf(stderr, "Error! Unable to uncons from empty %s!",
+              item.type == TYPE_STRING ? "string": "block");
+      exit(1);
+    }
+    Item new_item = make_integer(item.str_val.str_data[0]);
+    for (uint32_t i = 0; i < item.str_val.length; i++) {
+      item.str_val.str_data[i] = item.str_val.str_data[i + 1];
+    }
+    item.str_val.length--;
+    stack_push(item);
+    stack_push(new_item);
+  }
+  else if (item.type == TYPE_ARRAY) {
+    if (item.str_val.length == 0) {
+      fprintf(stderr, "Error! Unable to uncons from empty array");
+      exit(1);
+    }
+    Item new_item = item.arr_val.items[0];
+    for (uint32_t i = 0; i < item.arr_val.length; i++) {
+      item.arr_val.items[i] = item.arr_val.items[i + 1];
+    }
+    item.arr_val.length--;
+    stack_push(item);
+    stack_push(new_item);
+  }
+}
+
 void builtin_period() {
   Item item = stack_pop();
   stack_push(make_copy(&item));

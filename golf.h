@@ -57,6 +57,7 @@ void builtin_comma();
 void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();
+void builtin_lparen();
 void builtin_minus();
 void builtin_period();
 void builtin_plus();
