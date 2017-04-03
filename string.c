@@ -59,10 +59,28 @@ void string_subtract(String *str, String *to_subtract) {
   for (uint32_t i = 0; i < str->length; i++) {
     if (subtracted_chars[(unsigned) str->str_data[i]]) {
       chars_removed++;
-      continue;
     }
     else {
       str->str_data[i - chars_removed] = str->str_data[i];
+    }
+  }
+  str->length -= chars_removed;
+  str->str_data[str->length] = '\0';
+}
+
+void string_setwise_and(String *str, String *to_and) {
+  bool present_chars[256] = {0};
+  for (uint32_t i = 0; i < to_and->length; i++) {
+    present_chars[(unsigned) to_and->str_data[i]] = true;
+  }
+  uint32_t chars_removed = 0;
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (present_chars[(unsigned) str->str_data[i]]) {
+      present_chars[(unsigned) str->str_data[i]] = false;
+      str->str_data[i - chars_removed] = str->str_data[i];
+    }
+    else {
+      chars_removed++;
     }
   }
   str->length -= chars_removed;

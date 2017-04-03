@@ -45,9 +45,11 @@ typedef struct Map {
 Array new_array();
 void array_push(Array *arr, Item item);
 void array_subtract(Array *array, Array *to_subtract);
+void array_and(Array *array, Array *to_and);
 
 // builtin.c
 void builtin_abs();
+void builtin_ampersand();
 void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
@@ -100,6 +102,7 @@ void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
 void string_subtract(String *str, String *to_subtract);
+void string_setwise_and(String *str, String *to_and);
 String int_to_string(int64_t int_val);
 String read_file_to_string(FILE *file);
 

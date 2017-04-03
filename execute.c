@@ -22,6 +22,7 @@ void init_interpreter() {
   bracket_stack = new_array();
 
   definitions = new_map();
+  map_set(&definitions, "&",     make_builtin(builtin_ampersand));
   map_set(&definitions, "@",     make_builtin(builtin_at));
   map_set(&definitions, "\\",    make_builtin(builtin_backslash));
   map_set(&definitions, "`",     make_builtin(builtin_backtick));

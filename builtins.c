@@ -17,6 +17,26 @@ void builtin_abs() {
   }
 }
 
+void builtin_ampersand() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  coerce_types(&item1, &item2);
+  if (item1.type == TYPE_INTEGER) {
+    item2.int_val &= item1.int_val;
+  }
+  else if (item1.type == TYPE_BLOCK || item1.type == TYPE_STRING) {
+    string_setwise_and(&item2.str_val, &item1.str_val);
+    free_item(&item1);
+  }
+  else if (item1.type == TYPE_ARRAY) {
+    array_and(&item2.arr_val, &item1.arr_val);
+    free_item(&item1);
+  }
+
+  stack_push(item2);
+}
+
 void builtin_at() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
