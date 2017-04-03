@@ -46,6 +46,7 @@ Array new_array();
 void array_push(Array *arr, Item item);
 
 // builtin.c
+void builtin_at();
 void builtin_backslash();
 void builtin_lbracket();
 void builtin_period();

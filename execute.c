@@ -12,14 +12,16 @@ void init_interpreter() {
   bracket_stack = new_array();
 
   definitions = new_map();
-  map_set(&definitions, "[", make_builtin(builtin_lbracket));
-  map_set(&definitions, "]", make_builtin(builtin_rbracket));
-  map_set(&definitions, ".", make_builtin(builtin_period));
-  map_set(&definitions, ";", make_builtin(builtin_semicolon));
-  map_set(&definitions, "~", make_builtin(builtin_tilde));
-  map_set(&definitions, "\\", make_builtin(builtin_backslash));
+  map_set(&definitions, "@",     make_builtin(builtin_at));
+  map_set(&definitions, "\\",    make_builtin(builtin_backslash));
+  map_set(&definitions, "[",     make_builtin(builtin_lbracket));
+  map_set(&definitions, ".",     make_builtin(builtin_period));
+  map_set(&definitions, "]",     make_builtin(builtin_rbracket));
+  map_set(&definitions, ";",     make_builtin(builtin_semicolon));
+  map_set(&definitions, "~",     make_builtin(builtin_tilde));
   map_set(&definitions, "print", make_builtin(builtin_print));
-  map_set(&definitions, "n", make_string("\"\n\""));
+
+  map_set(&definitions, "n",    make_string("\"\n\""));
   map_set(&definitions, "puts", make_string("print n print"));
 }
 

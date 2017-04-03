@@ -4,6 +4,16 @@
 extern Array stack;
 extern Array bracket_stack;
 
+void builtin_at() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+  Item item3 = stack_pop();
+
+  stack_push(item2);
+  stack_push(item1);
+  stack_push(item3);
+}
+
 void builtin_backslash() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
