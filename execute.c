@@ -24,6 +24,7 @@ void init_interpreter() {
   map_set(&definitions, "if",    make_builtin(builtin_if));
   map_set(&definitions, "abs",   make_builtin(builtin_abs));
   map_set(&definitions, "print", make_builtin(builtin_print));
+  map_set(&definitions, "while", make_builtin(builtin_while));
 
   map_set(&definitions, "n",    make_block("\"\n\""));
   map_set(&definitions, "puts", make_block("print n print"));

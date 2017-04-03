@@ -58,6 +58,7 @@ void builtin_print();
 void builtin_rbracket();
 void builtin_semicolon();
 void builtin_tilde();
+void builtin_while();
 
 // item.c
 Item make_integer(int64_t int_val);

@@ -118,3 +118,21 @@ void builtin_tilde() {
     free(item.arr_val.items);
   }
 }
+
+void builtin_while() {
+  Item body = stack_pop();
+  Item cond = stack_pop();
+
+  execute_item(&cond);
+  Item bool_item = stack_pop();
+  while (item_boolean(&bool_item)) {
+    free_item(&bool_item);
+    execute_item(&body);
+    execute_item(&cond);
+    bool_item = stack_pop();
+  }
+
+  free_item(&bool_item);
+  free_item(&cond);
+  free_item(&body);
+}
