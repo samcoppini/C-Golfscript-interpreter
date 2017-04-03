@@ -35,6 +35,21 @@ void builtin_exclamation() {
   free_item(&item);
 }
 
+void builtin_if() {
+  Item false_item = stack_pop();
+  Item true_item = stack_pop();
+  Item cond = stack_pop();
+
+  if (item_boolean(&cond))
+    execute_item(&true_item);
+  else
+    execute_item(&false_item);
+
+  free_item(&cond);
+  free_item(&true_item);
+  free_item(&false_item);
+}
+
 void builtin_lbracket() {
   array_push(&bracket_stack, make_integer(stack.length));
 }

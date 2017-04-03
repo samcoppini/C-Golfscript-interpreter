@@ -21,6 +21,7 @@ void init_interpreter() {
   map_set(&definitions, "]",     make_builtin(builtin_rbracket));
   map_set(&definitions, ";",     make_builtin(builtin_semicolon));
   map_set(&definitions, "~",     make_builtin(builtin_tilde));
+  map_set(&definitions, "if",    make_builtin(builtin_if));
   map_set(&definitions, "print", make_builtin(builtin_print));
 
   map_set(&definitions, "n",    make_block("\"\n\""));
