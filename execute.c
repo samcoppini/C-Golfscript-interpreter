@@ -18,6 +18,7 @@ void init_interpreter() {
   map_set(&definitions, "!",     make_builtin(builtin_exclamation));
   map_set(&definitions, "[",     make_builtin(builtin_lbracket));
   map_set(&definitions, ".",     make_builtin(builtin_period));
+  map_set(&definitions, "+",     make_builtin(builtin_plus));
   map_set(&definitions, "]",     make_builtin(builtin_rbracket));
   map_set(&definitions, ";",     make_builtin(builtin_semicolon));
   map_set(&definitions, "~",     make_builtin(builtin_tilde));

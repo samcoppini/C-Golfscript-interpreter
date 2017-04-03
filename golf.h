@@ -7,8 +7,8 @@
 
 enum Type {
   TYPE_INTEGER,
-  TYPE_STRING,
   TYPE_ARRAY,
+  TYPE_STRING,
   TYPE_BLOCK,
   TYPE_FUNCTION
 };
@@ -54,6 +54,7 @@ void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();
 void builtin_period();
+void builtin_plus();
 void builtin_print();
 void builtin_rbracket();
 void builtin_semicolon();
@@ -72,6 +73,8 @@ String get_literal(Item *item);
 bool item_boolean(Item *item);
 void free_item(Item *item);
 void output_item(Item *item);
+String array_to_string(Item *array);
+void coerce_types(Item *item1, Item *item2);
 
 // execute.c
 void init_interpreter();
@@ -93,6 +96,7 @@ String create_string(char *str);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
+String int_to_string(int64_t int_val);
 String read_file_to_string(FILE *file);
 
 #endif

@@ -50,6 +50,27 @@ void string_add_str(String *str, char *to_append) {
   str->length += append_len;
 }
 
+String int_to_string(int64_t int_val) {
+  String str = new_string();
+  bool was_negative = int_val < 0;
+
+  if (int_val < 0)
+    int_val *= -1;
+  else if (int_val == 0)
+    string_add_char(&str, '0');
+
+  while (int_val > 0) {
+    string_add_char(&str, '0' + (int_val % 10));
+    int_val /= 10;
+  }
+
+  if (was_negative)
+    string_add_char(&str, '-');
+  string_reverse(&str);
+
+  return str;
+}
+
 String read_file_to_string(FILE *file) {
   String str = new_string();
   int c;

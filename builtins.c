@@ -73,6 +73,34 @@ void builtin_period() {
   stack_push(item);
 }
 
+void builtin_plus() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  coerce_types(&item1, &item2);
+
+  if (item2.type == TYPE_INTEGER) {
+    item2.int_val += item1.int_val;
+  }
+  else if (item2.type == TYPE_STRING) {
+    string_add_str(&item2.str_val, item1.str_val.str_data);
+    free(item1.str_val.str_data);
+  }
+  else if (item2.type == TYPE_BLOCK) {
+    string_add_char(&item2.str_val, ' ');
+    string_add_str(&item2.str_val, item1.str_val.str_data);
+    free(item1.str_val.str_data);
+  }
+  else if (item2.type == TYPE_ARRAY) {
+    for (uint32_t i = 0; i < item1.arr_val.length; i++) {
+      array_push(&item2.arr_val, item1.arr_val.items[i]);
+    }
+    free(item1.arr_val.items);
+  }
+
+  stack_push(item2);
+}
+
 void builtin_print() {
   Item item = stack_pop();
   output_item(&item);

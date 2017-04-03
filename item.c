@@ -50,18 +50,8 @@ Item make_copy(Item *item) {
 String get_literal(Item *item) {
   String str = new_string();
   if (item->type == TYPE_INTEGER) {
-    int64_t int_val = item->int_val;
-    if (int_val < 0)
-      int_val *= -1;
-    else if (int_val == 0)
-      string_add_char(&str, '0');
-    while (int_val > 0) {
-      string_add_char(&str, '0' + (int_val % 10));
-      int_val /= 10;
-    }
-    if (item->int_val < 0)
-      string_add_char(&str, '-');
-    string_reverse(&str);
+    free(str.str_data);
+    str = int_to_string(item->int_val);
   }
   else if (item->type == TYPE_STRING) {
     string_add_char(&str, '"');
@@ -137,6 +127,89 @@ void output_item(Item *item) {
   else if (item->type == TYPE_ARRAY) {
     for (uint32_t i = 0; i < item->arr_val.length; i++) {
       output_item(&item->arr_val.items[i]);
+    }
+  }
+}
+
+String array_to_string(Item *array) {
+  String str = new_string();
+  for (uint32_t i = 0; i < array->arr_val.length; i++) {
+    Item *cur_item = &array->arr_val.items[i];
+    if (cur_item->type == TYPE_INTEGER)
+      string_add_char(&str, cur_item->int_val);
+    else if (cur_item->type == TYPE_STRING)
+      string_add_str(&str, cur_item->str_val.str_data);
+    else if (cur_item->type == TYPE_BLOCK)
+      string_add_str(&str, cur_item->str_val.str_data);
+    else if (cur_item->type == TYPE_ARRAY) {
+      String array_str = array_to_string(cur_item);
+      string_add_str(&str, array_str.str_data);
+      free(array_str.str_data);
+    }
+  }
+  return str;
+}
+
+void coerce_types(Item *item1, Item *item2) {
+  if (item1->type == item2->type) {
+    return;
+  }
+  else if (item1->type < item2->type) {
+    Item *tmp = item1;
+    item1 = item2;
+    item2 = tmp;
+  }
+  if (item1->type == TYPE_BLOCK) {
+    if (item2->type == TYPE_STRING) {
+      item2->type = TYPE_BLOCK;
+    }
+    else if (item2->type == TYPE_ARRAY) {
+      String block_str = new_string();
+      for (uint32_t i = 0; i < item2->arr_val.length; i++) {
+        Item *cur_item = &item2->arr_val.items[i];
+        if (cur_item->type == TYPE_STRING ||cur_item->type == TYPE_BLOCK) {
+          string_add_str(&block_str, cur_item->str_val.str_data);
+        }
+        else if (cur_item->type == TYPE_ARRAY) {
+          String arr_str = array_to_string(cur_item);
+          string_add_str(&block_str, arr_str.str_data);
+          free(arr_str.str_data);
+        }
+        else if (cur_item->type == TYPE_INTEGER) {
+          String int_str = int_to_string(cur_item->int_val);
+          string_add_str(&block_str, int_str.str_data);
+          free(int_str.str_data);
+        }
+        if (i + 1 < item2->arr_val.length)
+          string_add_char(&block_str, ' ');
+      }
+      free_item(item2);
+      item2->type = TYPE_BLOCK;
+      item2->str_val = block_str;
+    }
+    else if (item2->type == TYPE_INTEGER) {
+      item2->type = TYPE_BLOCK;
+      item2->str_val = int_to_string(item2->int_val);
+    }
+  }
+  else if (item1->type == TYPE_STRING) {
+    if (item2->type == TYPE_ARRAY) {
+      String str = array_to_string(item2);
+      free_item(item2);
+      item2->type = TYPE_STRING;
+      item2->str_val = str;
+    }
+    else if (item2->type == TYPE_INTEGER) {
+      item2->type = TYPE_STRING;
+      item2->str_val = int_to_string(item2->int_val);
+    }
+  }
+  else if (item1->type == TYPE_ARRAY) {
+    if (item2->type == TYPE_INTEGER) {
+      int64_t int_val = item2->int_val;
+      item2->type = TYPE_ARRAY;
+      item2->arr_val = new_array();
+      array_push(&item2->arr_val, make_integer(int_val));
     }
   }
 }
