@@ -103,6 +103,21 @@ void builtin_comma() {
   free_item(&item);
 }
 
+void builtin_do() {
+  Item block = stack_pop();
+
+  execute_item(&block);
+  Item cond = stack_pop();
+  while (item_boolean(&cond)) {
+    free_item(&cond);
+    execute_item(&block);
+    cond = stack_pop();
+  }
+
+  free_item(&cond);
+  free_item(&block);
+}
+
 void builtin_exclamation() {
   Item item = stack_pop();
   stack_push(make_integer(!item_boolean(&item)));

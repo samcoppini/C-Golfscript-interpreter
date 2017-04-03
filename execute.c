@@ -39,6 +39,7 @@ void init_interpreter() {
   map_set(&definitions, ";",     make_builtin(builtin_semicolon));
   map_set(&definitions, "~",     make_builtin(builtin_tilde));
   map_set(&definitions, "abs",   make_builtin(builtin_abs));
+  map_set(&definitions, "do",    make_builtin(builtin_do));
   map_set(&definitions, "if",    make_builtin(builtin_if));
   map_set(&definitions, "print", make_builtin(builtin_print));
   map_set(&definitions, "rand",  make_builtin(builtin_rand));
