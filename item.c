@@ -111,30 +111,48 @@ bool item_boolean(Item *item) {
   }
 }
 
-// Returns whether two items are equal
-bool items_equal(Item *item1, Item *item2) {
-  if (item1->type != item2->type)
-    return false;
+int item_compare(Item *item1, Item *item2) {
+  if (item1->type != item2->type) {
+    if (item1->type < item2->type)
+      return -1;
+    else
+      return 1;
+  }
   switch (item1->type) {
     case TYPE_INTEGER:
-      return item1->int_val == item2->int_val;
+      if (item1->int_val < item2->int_val)
+        return -1;
+      else if (item1->int_val > item2->int_val)
+        return 1;
+      else
+        return 0;
 
     case TYPE_STRING:
     case TYPE_BLOCK:
-      return strcmp(item1->str_val.str_data, item2->str_val.str_data) == 0;
+      return strcmp(item1->str_val.str_data, item2->str_val.str_data);
 
     case TYPE_ARRAY:
-      if (item1->arr_val.length != item2->arr_val.length)
-        return false;
       for (uint32_t i = 0; i < item1->arr_val.length; i++) {
-        if (!items_equal(&item1->arr_val.items[i], &item2->arr_val.items[i]))
-          return false;
+        if (i >= item2->arr_val.length)
+          return 1;
+        int result = item_compare(&item1->arr_val.items[i],
+                                  &item2->arr_val.items[i]);
+        if (result != 0)
+          return result;
       }
-      return true;
+      if (item1->arr_val.length < item2->arr_val.length)
+        return -1;
+      else
+        return 0;
 
     default:
       assert(false);
   }
+}
+
+// Returns whether two items are equal
+bool items_equal(Item *item1, Item *item2) {
+  return item_compare(item1, item2) == 0;
 }
 
 // Frees the dynamically allocated contents of an item

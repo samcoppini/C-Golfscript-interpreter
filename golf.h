@@ -51,6 +51,18 @@ typedef struct Map {
   uint32_t num_items, allocated;
 } Map;
 
+// Structure for implementing an AVL tree
+typedef struct TreeNode {
+  Item *item;
+  struct TreeNode *left, *right;
+  uint16_t height;
+} TreeNode;
+
+// A set data structure for implementing setwise data structures on arrays
+typedef struct Set {
+  TreeNode *root;
+} Set;
+
 // array.c
 Array new_array();
 void array_push(Array *arr, Item item);
@@ -92,6 +104,7 @@ Item make_builtin(void (*function)());
 Item make_copy(Item *item);
 String get_literal(Item *item);
 bool item_boolean(Item *item);
+int item_compare(Item *item1, Item *item2);
 bool items_equal(Item *item1, Item *item2);
 void free_item(Item *item);
 void output_item(Item *item);
@@ -111,6 +124,12 @@ Map new_map();
 bool map_has(Map *map, char *key);
 void map_set(Map *map, char *key, Item item);
 Item *map_get(Map *map, char *key);
+
+// set.c
+Set new_set();
+void free_set(Set *set);
+bool set_has(Set *set, Item *item);
+void set_add(Set *set, Item *item);
 
 // string.c
 String new_string();

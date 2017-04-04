@@ -22,22 +22,23 @@ void array_push(Array *arr, Item item) {
 // Removes array members from array if they are present in to_subtract
 void array_subtract(Array *array, Array *to_subtract) {
   uint32_t items_removed = 0;
+  Set to_remove = new_set();
+  for (uint32_t i = 0; i < to_subtract->length; i++) {
+    set_add(&to_remove, &to_subtract->items[i]);
+  }
   for (uint32_t i = 0; i < array->length; i++) {
-    bool array_has = false;
-    for (uint32_t j = 0; j < to_subtract->length; j++) {
-      if (items_equal(&array->items[i], &to_subtract->items[j])) {
-        array_has = true;
-        break;
-      }
-    }
-    if (array_has) {
+    if (set_has(&to_remove, &array->items[i])) {
       items_removed++;
     }
     else {
-      array->items[i - items_removed] = array->items[i];
+      if (items_removed > 0) {
+        free_item(&array->items[i - items_removed]);
+        array->items[i - items_removed] = array->items[i];
+      }
     }
   }
   array->length -= items_removed;
+  free_set(&to_remove);
 }
 
 // Returns whether an array has a given item
