@@ -87,24 +87,23 @@ void array_and(Array *array, Array *to_and) {
 // Replaces array with the union of array and to_or
 void array_or(Array *array, Array *to_or) {
   uint32_t items_removed = 0;
+  Set already_added = new_set();
   for (uint32_t i = 0; i < array->length; i++) {
-    bool already_has = false;
-    for (uint32_t j = 0; j < i; j++) {
-      if (items_equal(&array->items[i], &array->items[j])) {
-        already_has = true;
-        break;
+    if (!set_has(&already_added, &array->items[i])) {
+      set_add(&already_added, &array->items[i]);
+      if (items_removed > 0) {
+        free_item(&array->items[i - items_removed]);
+        array->items[i - items_removed] = array->items[i];
       }
     }
-    if (already_has) {
-      items_removed++;
-    }
     else {
-      array->items[i - items_removed] = array->items[i];
+      items_removed++;
     }
   }
   array->length -= items_removed;
   for (uint32_t i = 0; i < to_or->length; i++) {
-    if (!array_has(array, &to_or->items[i])) {
+    if (!set_has(&already_added, &to_or->items[i])) {
+      set_add(&already_added, &to_or->items[i]);
       array_push(array, make_copy(&to_or->items[i]));
     }
   }
