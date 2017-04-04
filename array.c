@@ -107,4 +107,5 @@ void array_or(Array *array, Array *to_or) {
       array_push(array, make_copy(&to_or->items[i]));
     }
   }
+  free_set(&already_added);
 }
