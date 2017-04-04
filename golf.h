@@ -130,6 +130,7 @@ Set new_set();
 void free_set(Set *set);
 bool set_has(Set *set, Item *item);
 void set_add(Set *set, Item *item);
+void set_remove(Set *set, Item *item);
 
 // string.c
 String new_string();

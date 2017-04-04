@@ -119,7 +119,7 @@ static TreeNode *double_rotate_right(TreeNode *cur_node) {
 
 // Inserts a node in an AVL tree, rotating the tree if necessary, returning
 // the new top of this tree after a rotation
-TreeNode *insert_node(TreeNode *cur_node, Item *item) {
+static TreeNode *insert_node(TreeNode *cur_node, Item *item) {
   if (cur_node == NULL) {
     return new_node(item);
   }
@@ -159,4 +159,88 @@ TreeNode *insert_node(TreeNode *cur_node, Item *item) {
 // Adds an item to a set
 void set_add(Set *set, Item *item) {
   set->root = insert_node(set->root, item);
+}
+
+// Returns the largest value in a given subtree
+// Do not give a null pointer!
+static TreeNode *get_largest_node(TreeNode *cur_node) {
+  while (cur_node->right != NULL)
+    cur_node = cur_node->right;
+  return cur_node;
+}
+
+// Deletes a node from an AVL tree, rotating the tree if it becomes unbalanced
+// and returns the root node of the subtree
+static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
+  if (cur_node == NULL) {
+    return NULL;
+  }
+
+  int result = item_compare(item, cur_node->item);
+
+  if (result < 0) {
+    cur_node->left = delete_node(cur_node->left, item);
+    if (get_height(cur_node->right) - get_height(cur_node->left) == 2) {
+      TreeNode *left_node = cur_node->left;
+      int16_t left_balance = 0;
+      if (left_node != NULL) {
+        left_balance = get_height(left_node->left) -
+                       get_height(left_node->right);
+      }
+      if (left_balance >= 0) {
+        return single_rotate_left(cur_node);
+      }
+      else {
+        return double_rotate_left(cur_node);
+      }
+    }
+  }
+  else if (result > 0) {
+    cur_node->right = delete_node(cur_node->right, item);
+    if (get_height(cur_node->left) - get_height(cur_node->right) == 2) {
+      TreeNode *right_node = cur_node->right;
+      int16_t right_balance = 0;
+      if (right_node != NULL) {
+        right_balance = get_height(right_node->left) -
+                        get_height(right_node->right);
+      }
+      if (right_balance <= 0) {
+        return single_rotate_right(cur_node);
+      }
+      else {
+        return double_rotate_right(cur_node);
+      }
+    }
+  }
+  else {
+    // If we get here, then this is the node we need to delete
+    if (cur_node->left != NULL && cur_node->right != NULL) {
+      // If the node has two children, we take the largest node that
+      // is smaller than the current node, copy that node to our
+      // current node, and delete the node that we copied
+      TreeNode *to_replace = get_largest_node(cur_node->left);
+      cur_node->item = to_replace->item;
+      cur_node->left = delete_node(cur_node->left, to_replace->item);
+    }
+    else if (cur_node->left != NULL || cur_node->right != NULL) {
+      // If the node has one child, we just return that child
+      TreeNode *child = cur_node->left ? cur_node->left: cur_node->right;
+      free(cur_node);
+      return child;
+    }
+    else {
+      // No children. Easiest case to handle (and also a pretty great song)
+      // We just return NULL for this case
+      free(cur_node);
+      return NULL;
+    }
+  }
+
+  set_height(cur_node);
+
+  return cur_node;
+}
+
+void set_remove(Set *set, Item *item) {
+  set->root = delete_node(set->root, item);
 }

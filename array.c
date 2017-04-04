@@ -53,35 +53,25 @@ bool array_has(Array *array, Item *item) {
 
 // Replaces array with the intersection of array and to_and
 void array_and(Array *array, Array *to_and) {
+  Set can_add = new_set();
+  for (uint32_t i = 0; i < to_and->length; i++) {
+    set_add(&can_add, &to_and->items[i]);
+  }
   uint32_t items_removed = 0;
   for (uint32_t i = 0; i < array->length; i++) {
-    bool array_has = false;
-    for (uint32_t j = 0; j < to_and->length; j++) {
-      if (items_equal(&array->items[i], &to_and->items[j])) {
-        array_has = true;
-        break;
-      }
-    }
-    if (!array_has) {
+    if (!set_has(&can_add, &array->items[i])) {
       items_removed++;
     }
     else {
-      bool array_has = false;
-      for (uint32_t j = 0; j < i - items_removed; j++) {
-        if (items_equal(&array->items[i], &array->items[j])) {
-          array_has = true;
-          break;
-        }
-      }
-      if (array_has) {
-        items_removed++;
-      }
-      else {
+      set_remove(&can_add, &array->items[i]);
+      if (items_removed > 0) {
+        free_item(&array->items[i - items_removed]);
         array->items[i - items_removed] = array->items[i];
       }
     }
   }
   array->length -= items_removed;
+  free_set(&can_add);
 }
 
 // Replaces array with the union of array and to_or
