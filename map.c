@@ -1,3 +1,7 @@
+// map.c
+// Contains functions for manipulating maps
+// Really only used to keep track of assigned variables
+
 #include <stdlib.h>
 #include <string.h>
 #include "golf.h"
@@ -15,6 +19,7 @@ static uint32_t hash(char *key) {
   return hash_val;
 }
 
+// Gets the appropriate slot for a given key in a given map
 static uint32_t get_slot(Map *map, char *key) {
   uint32_t mask = map->allocated - 1;
   return hash(key) & mask;
@@ -30,6 +35,7 @@ Map new_map() {
   return map;
 }
 
+// Returns whether the map has a given key
 bool map_has(Map *map, char *key) {
   uint32_t slot = get_slot(map, key);
   while (map->keys[slot] != NULL) {
@@ -43,6 +49,7 @@ bool map_has(Map *map, char *key) {
   return false;
 }
 
+// Doubles the size of a map, rehashing all the keys
 static void map_increase_size(Map *map) {
   char **old_keys = map->keys;
   Item *old_items = map->items;

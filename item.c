@@ -1,3 +1,6 @@
+// item.c
+// Contains functions for manipulating items
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +32,7 @@ Item make_builtin(void (*function)()) {
   return item;
 }
 
+// Returns a copy of an item, duplicating its dynamically allocated contents
 Item make_copy(Item *item) {
   Item new_item;
 
@@ -48,6 +52,8 @@ Item make_copy(Item *item) {
   return new_item;
 }
 
+// Returns a string representation of an item, which returns the original
+// item when evaluated
 String get_literal(Item *item) {
   String str = new_string();
   if (item->type == TYPE_INTEGER) {
@@ -86,6 +92,8 @@ String get_literal(Item *item) {
   return str;
 }
 
+// Returns whether the item evaluates as "true"
+// Only zero, empty blocks, empty arrays and empty strings evaluate as false
 bool item_boolean(Item *item) {
   switch (item->type) {
     case TYPE_INTEGER:
@@ -103,6 +111,7 @@ bool item_boolean(Item *item) {
   }
 }
 
+// Returns whether two items are equal
 bool items_equal(Item *item1, Item *item2) {
   if (item1->type != item2->type)
     return false;
@@ -128,6 +137,7 @@ bool items_equal(Item *item1, Item *item2) {
   }
 }
 
+// Frees the dynamically allocated contents of an item
 void free_item(Item *item) {
   if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {
     free(item->str_val.str_data);
@@ -157,6 +167,8 @@ void output_item(Item *item) {
   }
 }
 
+// Converts an array to a string
+// Note that integers are converted to their ascii equivalents
 String array_to_string(Item *array) {
   String str = new_string();
   for (uint32_t i = 0; i < array->arr_val.length; i++) {
@@ -176,6 +188,10 @@ String array_to_string(Item *array) {
   return str;
 }
 
+// Performs type conversion, converting two items to the same type
+// With two different types, the item with the lower type priority
+// is converted to other item's type
+// The priority from smallest to largest is integer, array, string, block
 void coerce_types(Item *item1, Item *item2) {
   if (item1->type == item2->type) {
     return;

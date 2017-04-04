@@ -1,3 +1,7 @@
+// execute.c
+// Contains functions for executing golfscript code, and for starting/ending
+// the interpreter
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,8 +14,11 @@ Array bracket_stack;
 static Map definitions;
 
 void init_interpreter() {
+  // Initializes the program's stack
   stack = new_array();
 
+  // Pushes the input onto the stack
+  // If input is not being piped into the program, it pushes an empty string
   if (isatty(STDIN_FILENO)) {
     stack_push(make_string(""));
   }
@@ -20,8 +27,11 @@ void init_interpreter() {
     stack_push(first_item);
   }
 
+  // Initializes the array used to keep track of the size of the stack
+  // after a left bracket is executed
   bracket_stack = new_array();
 
+  // Initializes the built-in functions
   definitions = new_map();
   map_set(&definitions, "&",     make_builtin(builtin_ampersand));
   map_set(&definitions, "@",     make_builtin(builtin_at));
@@ -51,9 +61,11 @@ void init_interpreter() {
   map_set(&definitions, "puts", make_block("print n print"));
   map_set(&definitions, "p",    make_block("`puts"));
 
+  // Initializes random number generator for the rand function
   srand(time(NULL));
 }
 
+// Pushes an item to the stack
 void stack_push(Item item) {
   array_push(&stack, item);
 }
@@ -65,6 +77,8 @@ Item stack_pop() {
   }
   stack.length--;
 
+  // If the stack's size decreases below what they were when a opening
+  // bracket was encountered, we have to move the bracket accordingly
   for (uint32_t i = 0; i < bracket_stack.length; i++) {
     if (stack.length < bracket_stack.items[i].int_val)
       bracket_stack.items[i].int_val = stack.length;

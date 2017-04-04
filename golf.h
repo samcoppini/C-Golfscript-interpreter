@@ -1,3 +1,7 @@
+// golf.h
+// Contains type declarations and forward declarations for everything used
+// for the interpreter
+
 #ifndef GOLF_H
 #define GOLF_H
 
@@ -5,11 +9,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+// An enumeration of the types an item can be
 enum Type {
   TYPE_INTEGER,
   TYPE_ARRAY,
   TYPE_STRING,
   TYPE_BLOCK,
+
+  // Not usable by golfscript programmers, only used to implement
+  // the builtin functions
   TYPE_FUNCTION
 };
 
@@ -26,15 +34,17 @@ typedef struct Array {
 } Array;
 
 typedef struct Item {
-  enum Type type;
+  enum Type type; // The type of the item
   union {
-    int64_t int_val;
-    String str_val;
-    Array arr_val;
-    void (*function)();
+    int64_t int_val;    // Used for integers
+    String str_val;     // Used for strings and blocks
+    Array arr_val;      // Used for arrays
+    void (*function)(); // Used for builtin functions
   };
 } Item;
 
+// A simple hash table
+// Used for assigned values and builtin functions
 typedef struct Map {
   char **keys;
   Item *items;

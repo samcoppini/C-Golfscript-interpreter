@@ -1,3 +1,6 @@
+// string.c
+// Contains functions for manipulating strings
+
 #include <stdlib.h>
 #include <string.h>
 #include "golf.h"
@@ -10,6 +13,7 @@ String new_string() {
   return str;
 }
 
+// Creates a String from a C string
 String create_string(char *to_copy) {
   size_t old_len = strlen(to_copy);
   uint32_t new_len = STRING_INIT_SIZE;
@@ -21,6 +25,7 @@ String create_string(char *to_copy) {
   return str;
 }
 
+// Reverses a string in-place
 void string_reverse(String *str) {
   for (uint32_t i = 0; i < str->length / 2; i++) {
     char temp = str->str_data[i];
@@ -29,6 +34,7 @@ void string_reverse(String *str) {
   }
 }
 
+// Adds a character to the end of a string
 void string_add_char(String *str, char c) {
   if (str->length + 1 >= str->allocated) {
     str->allocated <<= 1;
@@ -38,6 +44,7 @@ void string_add_char(String *str, char c) {
   str->str_data[str->length] = '\0';
 }
 
+// Adds a C string to the end of a String
 void string_add_str(String *str, char *to_append) {
   size_t append_len = strlen(to_append);
   if (str->length + append_len >= str->allocated) {
@@ -50,6 +57,7 @@ void string_add_str(String *str, char *to_append) {
   str->length += append_len;
 }
 
+// Removes the characters in to_subtract from str
 void string_subtract(String *str, String *to_subtract) {
   bool subtracted_chars[256] = {0};
   for (uint32_t i = 0; i < to_subtract->length; i++) {
@@ -68,6 +76,8 @@ void string_subtract(String *str, String *to_subtract) {
   str->str_data[str->length] = '\0';
 }
 
+// Removes all characters from str that aren't in to_and, and removes
+// duplicate characters
 void string_setwise_and(String *str, String *to_and) {
   bool present_chars[256] = {0};
   for (uint32_t i = 0; i < to_and->length; i++) {
@@ -87,6 +97,7 @@ void string_setwise_and(String *str, String *to_and) {
   str->str_data[str->length] = '\0';
 }
 
+// Replaces str with the union of str and to_or
 void string_setwise_or(String *str, String *to_or) {
   bool present_chars[256] = {0};
   uint32_t chars_removed = 0;
@@ -109,6 +120,7 @@ void string_setwise_or(String *str, String *to_or) {
   }
 }
 
+// Converts an integer to its string representation
 String int_to_string(int64_t int_val) {
   String str = new_string();
   bool was_negative = int_val < 0;
@@ -130,6 +142,7 @@ String int_to_string(int64_t int_val) {
   return str;
 }
 
+// Reads the complete contents of a file to a string
 String read_file_to_string(FILE *file) {
   String str = new_string();
   int c;

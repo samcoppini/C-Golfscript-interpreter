@@ -1,3 +1,6 @@
+// builtins.c
+// Contains functions implementing golfscript's builtin functions
+
 #include <stdlib.h>
 #include "golf.h"
 

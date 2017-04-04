@@ -1,3 +1,6 @@
+// array.c
+// Contains functions for manipulating golfscript arrays
+
 #include <stdlib.h>
 #include "golf.h"
 
@@ -16,6 +19,7 @@ void array_push(Array *arr, Item item) {
   arr->items[arr->length++] = item;
 }
 
+// Removes array members from array if they are present in to_subtract
 void array_subtract(Array *array, Array *to_subtract) {
   uint32_t items_removed = 0;
   for (uint32_t i = 0; i < array->length; i++) {
@@ -36,6 +40,7 @@ void array_subtract(Array *array, Array *to_subtract) {
   array->length -= items_removed;
 }
 
+// Returns whether an array has a given item
 bool array_has(Array *array, Item *item) {
   for (uint32_t i = 0; i < array->length; i++) {
     if (items_equal(item, &array->items[i])) {
@@ -45,6 +50,7 @@ bool array_has(Array *array, Item *item) {
   return false;
 }
 
+// Replaces array with the intersection of array and to_and
 void array_and(Array *array, Array *to_and) {
   uint32_t items_removed = 0;
   for (uint32_t i = 0; i < array->length; i++) {
@@ -77,6 +83,7 @@ void array_and(Array *array, Array *to_and) {
   array->length -= items_removed;
 }
 
+// Replaces array with the union of array and to_or
 void array_or(Array *array, Array *to_or) {
   uint32_t items_removed = 0;
   for (uint32_t i = 0; i < array->length; i++) {
