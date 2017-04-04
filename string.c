@@ -87,6 +87,28 @@ void string_setwise_and(String *str, String *to_and) {
   str->str_data[str->length] = '\0';
 }
 
+void string_setwise_or(String *str, String *to_or) {
+  bool present_chars[256] = {0};
+  uint32_t chars_removed = 0;
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (present_chars[(unsigned) str->str_data[i]]) {
+      chars_removed++;
+    }
+    else {
+      present_chars[(unsigned) str->str_data[i]] = true;
+      str->str_data[i - chars_removed] = str->str_data[i];
+    }
+  }
+  str->length -= chars_removed;
+  str->str_data[str->length] = '\0';
+  for (uint32_t i = 0; i < to_or->length; i++) {
+    if (!present_chars[(unsigned) to_or->str_data[i]]) {
+      present_chars[(unsigned) to_or->str_data[i]] = true;
+      string_add_char(str, to_or->str_data[i]);
+    }
+  }
+}
+
 String int_to_string(int64_t int_val) {
   String str = new_string();
   bool was_negative = int_val < 0;

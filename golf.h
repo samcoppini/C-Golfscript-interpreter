@@ -46,6 +46,7 @@ Array new_array();
 void array_push(Array *arr, Item item);
 void array_subtract(Array *array, Array *to_subtract);
 void array_and(Array *array, Array *to_and);
+void array_or(Array *array, Array *to_or);
 
 // builtin.c
 void builtin_abs();
@@ -53,6 +54,7 @@ void builtin_ampersand();
 void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
+void builtin_bar();
 void builtin_comma();
 void builtin_do();
 void builtin_exclamation();
@@ -108,6 +110,7 @@ void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
 void string_subtract(String *str, String *to_subtract);
 void string_setwise_and(String *str, String *to_and);
+void string_setwise_or(String *str, String *to_or);
 String int_to_string(int64_t int_val);
 String read_file_to_string(FILE *file);
 
