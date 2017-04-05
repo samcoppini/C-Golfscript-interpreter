@@ -124,6 +124,25 @@ String next_token(String *str, uint32_t *code_pos) {
       exit(1);
     }
   }
+  else if (c == '\'') {
+    do {
+      if (c == '\\') {
+        if (str->str_data[*code_pos + 1] == '\'') {
+          c = '\'';
+          *code_pos += 1;
+        }
+      }
+      string_add_char(&token, c);
+      c = str->str_data[++(*code_pos)];
+    } while (c != '\'' && *code_pos < str->length);
+
+    *code_pos += 1;
+
+    if (*code_pos > str->length) {
+      fprintf(stderr, "Error! Unmatched ' encountered in the code!\n");
+      exit(1);
+    }
+  }
   else if (c == '-') {
     string_add_char(&token, c);
     c = str->str_data[++(*code_pos)];
@@ -203,7 +222,7 @@ void execute_string(String *str) {
     {
       stack_push(make_integer(atoll(tok.str_data)));
     }
-    else if (tok.str_data[0] == '"') {
+    else if (tok.str_data[0] == '"' || tok.str_data[0] == '\'') {
       stack_push(make_string(tok.str_data + 1));
     }
     else if (tok.str_data[0] == '{') {
