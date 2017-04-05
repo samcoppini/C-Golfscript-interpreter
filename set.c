@@ -17,6 +17,7 @@ static void free_tree(TreeNode *node) {
     return;
   free_tree(node->left);
   free_tree(node->right);
+  free_item(&node->item);
   free(node);
 }
 
@@ -26,10 +27,10 @@ void free_set(Set *set) {
 
 static TreeNode *new_node(Item *item) {
   TreeNode *node = malloc(sizeof(TreeNode));
-  node->item = item;
+  node->item = make_copy(item);
   node->left = NULL;
   node->right = NULL;
-  node->height = 0;
+  node->height = 1;
   return node;
 }
 
@@ -38,7 +39,7 @@ static TreeNode *new_node(Item *item) {
 bool set_has(Set *set, Item *item) {
   TreeNode *cur_node = set->root;
   while (cur_node != NULL) {
-    int result = item_compare(item, cur_node->item);
+    int result = item_compare(item, &cur_node->item);
     if (result < 0) {
       cur_node = cur_node->left;
     }
@@ -124,13 +125,13 @@ static TreeNode *insert_node(TreeNode *cur_node, Item *item) {
     return new_node(item);
   }
 
-  int result = item_compare(item, cur_node->item);
+  int result = item_compare(item, &cur_node->item);
 
   if (result < 0) {
     cur_node->left = insert_node(cur_node->left, item);
 
     if (get_height(cur_node->left) - get_height(cur_node->right) == 2) {
-      if (item_compare(item, cur_node->left->item) < 0)
+      if (item_compare(item, &cur_node->left->item) < 0)
         cur_node = single_rotate_right(cur_node);
       else
         cur_node = double_rotate_right(cur_node);
@@ -140,7 +141,7 @@ static TreeNode *insert_node(TreeNode *cur_node, Item *item) {
     cur_node->right = insert_node(cur_node->right, item);
 
     if (get_height(cur_node->right) - get_height(cur_node->left) == 2) {
-      if (item_compare(item, cur_node->right->item) > 0)
+      if (item_compare(item, &cur_node->right->item) > 0)
         cur_node = single_rotate_left(cur_node);
       else
         cur_node = double_rotate_left(cur_node);
@@ -176,7 +177,7 @@ static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
     return NULL;
   }
 
-  int result = item_compare(item, cur_node->item);
+  int result = item_compare(item, &cur_node->item);
 
   if (result < 0) {
     cur_node->left = delete_node(cur_node->left, item);
@@ -220,7 +221,7 @@ static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
       // current node, and delete the node that we copied
       TreeNode *to_replace = get_largest_node(cur_node->left);
       cur_node->item = to_replace->item;
-      cur_node->left = delete_node(cur_node->left, to_replace->item);
+      cur_node->left = delete_node(cur_node->left, &to_replace->item);
     }
     else if (cur_node->left != NULL || cur_node->right != NULL) {
       // If the node has one child, we just return that child

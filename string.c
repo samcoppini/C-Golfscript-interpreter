@@ -120,6 +120,39 @@ void string_setwise_or(String *str, String *to_or) {
   }
 }
 
+// Replaces str with the setwise symmetric difference of str and to_xor
+void string_setwise_xor(String *str, String *to_xor) {
+  bool in_string1[256] = {0};
+  bool in_string2[256] = {0};
+  for (uint32_t i = 0; i < to_xor->length; i++) {
+    in_string2[(unsigned) to_xor->str_data[i]] = true;
+  }
+  uint32_t chars_removed = 0;
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (in_string2[(unsigned) str->str_data[i]]) {
+      in_string1[(unsigned) str->str_data[i]] = true;
+      chars_removed++;
+    }
+    else if (in_string1[(unsigned) str->str_data[i]]) {
+      chars_removed++;
+    }
+    else {
+      in_string1[(unsigned) str->str_data[i]] = true;
+      str->str_data[i - chars_removed] = str->str_data[i];
+    }
+  }
+  str->length -= chars_removed;
+  str->str_data[str->length] = 0;
+  for (uint32_t i = 0; i < to_xor->length; i++) {
+    if (!in_string1[(unsigned) to_xor->str_data[i]] &&
+         in_string2[(unsigned) to_xor->str_data[i]])
+    {
+      in_string2[(unsigned) to_xor->str_data[i]] = false;
+      string_add_char(str, to_xor->str_data[i]);
+    }
+  }
+}
+
 // Converts an integer to its string representation
 String int_to_string(int64_t int_val) {
   String str = new_string();

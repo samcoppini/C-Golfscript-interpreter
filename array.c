@@ -99,3 +99,39 @@ void array_or(Array *array, Array *to_or) {
   }
   free_set(&already_added);
 }
+
+// Calculates the symmteric difference of two arrays and store the result
+// in array
+void array_xor(Array *array, Array *to_xor) {
+  Set first_set  = new_set();
+  Set second_set = new_set();
+  for (uint32_t i = 0; i < to_xor->length; i++) {
+    set_add(&second_set, &to_xor->items[i]);
+  }
+  uint32_t items_removed = 0;
+  for (uint32_t i = 0; i < array->length; i++) {
+    if (!set_has(&first_set, &array->items[i])) {
+      set_add(&first_set, &array->items[i]);
+      if (!set_has(&second_set, &array->items[i])) {
+        if (items_removed > 0) {
+          free_item(&array->items[i - items_removed]);
+          array->items[i - items_removed] = array->items[i];
+        }
+        continue;
+      }
+    }
+    items_removed++;
+  }
+  array->length -= items_removed;
+  for (uint32_t i = 0; i < to_xor->length; i++) {
+    if (!set_has(&first_set, &to_xor->items[i]) &&
+         set_has(&second_set, &to_xor->items[i]))
+    {
+      set_remove(&second_set, &to_xor->items[i]);
+      array_push(array, make_copy(&to_xor->items[i]));
+    }
+  }
+
+  free_set(&first_set);
+  free_set(&second_set);
+}

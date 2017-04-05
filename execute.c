@@ -38,6 +38,7 @@ void init_interpreter() {
   map_set(&definitions, "\\",    make_builtin(builtin_backslash));
   map_set(&definitions, "`",     make_builtin(builtin_backtick));
   map_set(&definitions, "|",     make_builtin(builtin_bar));
+  map_set(&definitions, "^",     make_builtin(builtin_caret));
   map_set(&definitions, ",",     make_builtin(builtin_comma));
   map_set(&definitions, "!",     make_builtin(builtin_exclamation));
   map_set(&definitions, "[",     make_builtin(builtin_lbracket));
