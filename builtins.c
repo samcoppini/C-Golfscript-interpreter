@@ -334,6 +334,95 @@ void builtin_lparen() {
   }
 }
 
+void builtin_question() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type < item2.type)
+    swap_items(&item1, &item2);
+
+  if (item1.type == TYPE_INTEGER) {
+    if (item1.int_val < 0) {
+      fprintf(stderr, "Error! Can't raise an integer to a negative power!\n");
+      exit(1);
+    }
+    int64_t base = item2.int_val;
+    item2.int_val = 1;
+    while (item1.int_val) {
+      if (item1.int_val & 1)
+        item2.int_val *= base;
+      item1.int_val >>= 1;
+      base *= base;
+    }
+    stack_push(item2);
+  }
+  else if (item1.type == TYPE_ARRAY) {
+    if (item2.type == TYPE_ARRAY) {
+      swap_items(&item1, &item2);
+    }
+    stack_push(make_integer(array_find(&item1.arr_val, &item2)));
+    free_item(&item2);
+    free_item(&item1);
+  }
+  else if (item1.type == TYPE_STRING) {
+    if (item2.type == TYPE_INTEGER) {
+      stack_push(make_integer(string_find_char(&item1.str_val,
+                                               item2.int_val)));
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_ARRAY) {
+      stack_push(make_integer(array_find(&item2.arr_val, &item1)));
+      free_item(&item1);
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_STRING) {
+      stack_push(make_integer(string_find_str(&item2.str_val,
+                                              &item1.str_val)));
+      free_item(&item1);
+      free_item(&item2);
+    }
+  }
+  else if (item1.type == TYPE_BLOCK) {
+    if (item2.type == TYPE_INTEGER) {
+      fprintf(stderr, "Error! Can't perform find operation on an integer.\n");
+      exit(1);
+    }
+    else if (item2.type == TYPE_BLOCK || item2.type == TYPE_STRING) {
+      if (item2.type == TYPE_BLOCK) {
+        swap_items(&item1, &item2);
+      }
+      for (uint32_t i = 0; i < item2.str_val.length; i++) {
+        stack_push(make_integer(item2.str_val.str_data[i]));
+        execute_string(&item1.str_val);
+        Item item_bool = stack_pop();
+        if (item_boolean(&item_bool)) {
+          free_item(&item_bool);
+          stack_push(make_integer(item2.str_val.str_data[i]));
+          break;
+        }
+        free_item(&item_bool);
+      }
+      free_item(&item1);
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_ARRAY) {
+      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
+        stack_push(make_copy(&item2.arr_val.items[i]));
+        execute_string(&item1.str_val);
+        Item item_bool = stack_pop();
+        if (item_boolean(&item_bool)) {
+          free_item(&item_bool);
+          stack_push(make_copy(&item2.arr_val.items[i]));
+          break;
+        }
+        free_item(&item_bool);
+      }
+      free_item(&item1);
+      free_item(&item2);
+    }
+  }
+}
+
 void builtin_period() {
   Item item = stack_pop();
   stack_push(make_copy(&item));

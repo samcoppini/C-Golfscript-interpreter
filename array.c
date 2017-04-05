@@ -19,6 +19,16 @@ void array_push(Array *arr, Item item) {
   arr->items[arr->length++] = item;
 }
 
+// Returns the index of an element, or -1 if it's not present in the array
+int64_t array_find(Array *array, Item *item) {
+  for (uint32_t i = 0; i < array->length; i++) {
+    if (items_equal(item, &array->items[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 void array_multiply(Array *array, int64_t factor) {
   if (factor < 0) {
     fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
@@ -61,16 +71,6 @@ void array_subtract(Array *array, Array *to_subtract) {
   }
   array->length -= items_removed;
   free_set(&to_remove);
-}
-
-// Returns whether an array has a given item
-bool array_has(Array *array, Item *item) {
-  for (uint32_t i = 0; i < array->length; i++) {
-    if (items_equal(item, &array->items[i])) {
-      return true;
-    }
-  }
-  return false;
 }
 
 // Replaces array with the intersection of array and to_and

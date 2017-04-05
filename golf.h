@@ -66,6 +66,7 @@ typedef struct Set {
 // array.c
 Array new_array();
 void array_push(Array *arr, Item item);
+int64_t array_find(Array *arr, Item *item);
 void array_multiply(Array *array, int64_t factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_and(Array *array, Array *to_and);
@@ -88,6 +89,7 @@ void builtin_if();
 void builtin_lbracket();
 void builtin_lparen();
 void builtin_minus();
+void builtin_question();
 void builtin_period();
 void builtin_plus();
 void builtin_print();
@@ -144,6 +146,8 @@ String create_string(char *str);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
+int64_t string_find_char(String *str, char c);
+int64_t string_find_str(String *str, String *to_find);
 void string_multiply(String *str, int64_t factor);
 void string_subtract(String *str, String *to_subtract);
 void string_setwise_and(String *str, String *to_and);

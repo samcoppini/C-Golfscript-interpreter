@@ -57,6 +57,22 @@ void string_add_str(String *str, char *to_append) {
   str->length += append_len;
 }
 
+int64_t string_find_char(String *str, char c) {
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (str->str_data[i] == c)
+      return i;
+  }
+  return -1;
+}
+
+int64_t string_find_str(String *str, String *to_find) {
+  for (uint32_t i = 0; i + to_find->length <= str->length; i++) {
+    if (strncmp(str->str_data + i, to_find->str_data, to_find->length) == 0)
+      return i;
+  }
+  return -1;
+}
+
 void string_multiply(String *str, int64_t factor) {
   if (factor < 0) {
     fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
