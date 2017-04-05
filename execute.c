@@ -89,6 +89,17 @@ Item stack_pop() {
   return stack.items[stack.length];
 }
 
+int hex_digit_val(char c) {
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  else if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  else if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  else
+    return -1;
+}
+
 // Return the next token in the string from the given code position
 String next_token(String *str, uint32_t *code_pos) {
   String token = new_string();
@@ -111,6 +122,19 @@ String next_token(String *str, uint32_t *code_pos) {
           case 's': c =  ' ';   break;
           case 't': c = '\t';   break;
           case 'v': c = '\v';   break;
+          case 'x':
+            c = hex_digit_val(str->str_data[++(*code_pos)]);
+            if (c < 0) {
+              fprintf(stderr, "Invalid hex escape sequence!\n");
+              exit(1);
+            }
+            if (*code_pos < str->length &&
+                hex_digit_val(str->str_data[*code_pos + 1] >= 0))
+            {
+              c <<= 4;
+              c += hex_digit_val(str->str_data[++(*code_pos)]);
+            }
+            break;
         }
       }
       string_add_char(&token, c);
