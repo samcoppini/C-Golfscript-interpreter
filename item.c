@@ -155,6 +155,32 @@ bool items_equal(Item *item1, Item *item2) {
   return item_compare(item1, item2) == 0;
 }
 
+// Adds item2 to item1
+void items_add(Item *item1, Item *item2) {
+  coerce_types(item1, item2);
+  if (item1->type == TYPE_INTEGER) {
+    item1->int_val += item2->int_val;
+  }
+  else if (item1->type == TYPE_STRING) {
+    string_add_str(&item1->str_val, item2->str_val.str_data);
+  }
+  else if (item1->type == TYPE_BLOCK) {
+    string_add_char(&item1->str_val, ' ');
+    string_add_str(&item1->str_val, item2->str_val.str_data);
+  }
+  else if (item1->type == TYPE_ARRAY) {
+    for (uint32_t i = 0; i < item2->arr_val.length; i++) {
+      array_push(&item1->arr_val, item2->arr_val.items[i]);
+    }
+  }
+}
+
+void swap_items(Item *a, Item *b) {
+  Item tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
 // Frees the dynamically allocated contents of an item
 void free_item(Item *item) {
   if (item->type == TYPE_STRING || item->type == TYPE_BLOCK) {

@@ -34,6 +34,7 @@ void init_interpreter() {
   // Initializes the built-in functions
   definitions = new_map();
   map_set(&definitions, "&",     make_builtin(builtin_ampersand));
+  map_set(&definitions, "*",     make_builtin(builtin_asterisk));
   map_set(&definitions, "@",     make_builtin(builtin_at));
   map_set(&definitions, "\\",    make_builtin(builtin_backslash));
   map_set(&definitions, "`",     make_builtin(builtin_backtick));

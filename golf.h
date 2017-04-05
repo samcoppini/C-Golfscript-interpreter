@@ -66,6 +66,7 @@ typedef struct Set {
 // array.c
 Array new_array();
 void array_push(Array *arr, Item item);
+void array_multiply(Array *array, int64_t factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_and(Array *array, Array *to_and);
 void array_or(Array *array, Array *to_or);
@@ -74,6 +75,7 @@ void array_xor(Array *array, Array *to_xor);
 // builtin.c
 void builtin_abs();
 void builtin_ampersand();
+void builtin_asterisk();
 void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
@@ -108,6 +110,8 @@ String get_literal(Item *item);
 bool item_boolean(Item *item);
 int item_compare(Item *item1, Item *item2);
 bool items_equal(Item *item1, Item *item2);
+void items_add(Item *item1, Item *item2);
+void swap_items(Item *a, Item *b);
 void free_item(Item *item);
 void output_item(Item *item);
 String array_to_string(Item *array);
@@ -140,6 +144,7 @@ String create_string(char *str);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, char *to_append);
+void string_multiply(String *str, int64_t factor);
 void string_subtract(String *str, String *to_subtract);
 void string_setwise_and(String *str, String *to_and);
 void string_setwise_or(String *str, String *to_or);

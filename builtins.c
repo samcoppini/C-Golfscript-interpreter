@@ -40,6 +40,97 @@ void builtin_ampersand() {
   stack_push(item2);
 }
 
+void builtin_asterisk() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type < item2.type)
+    swap_items(&item1, &item2);
+
+  if (item2.type == TYPE_INTEGER) {
+    if (item1.type == TYPE_INTEGER) {
+      item1.int_val *= item2.int_val;
+      stack_push(item1);
+    }
+    else if (item1.type == TYPE_ARRAY) {
+      array_multiply(&item1.arr_val, item2.int_val);
+      stack_push(item1);
+    }
+    else if (item1.type == TYPE_STRING) {
+      string_multiply(&item1.str_val, item2.int_val);
+      stack_push(item1);
+    }
+    else if (item1.type == TYPE_BLOCK) {
+      while (item1.int_val-- > 0) {
+        execute_string(&item1.str_val);
+      }
+      free(item1.str_val.str_data);
+    }
+  }
+  else if (item2.type == TYPE_ARRAY) {
+    if (item1.type == TYPE_ARRAY || item1.type == TYPE_STRING) {
+      Item joined_array = item1.type == TYPE_ARRAY ? make_array()
+                                                   : make_string("");
+      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
+        Item to_add = make_copy(&item2.arr_val.items[i]);
+        items_add(&joined_array, &to_add);
+        if (i + 1 < item2.arr_val.length) {
+          to_add = make_copy(&item1);
+          items_add(&joined_array, &to_add);
+        }
+      }
+      free_item(&item1);
+      free_item(&item2);
+      stack_push(joined_array);
+    }
+    else if (item1.type == TYPE_BLOCK) {
+      if (item2.arr_val.length == 0) {
+        fprintf(stderr, "Error! Cannot map over an empty array!\n");
+        exit(1);
+      }
+      else {
+        stack_push(item2.arr_val.items[0]);
+        for (uint32_t i = 1; i < item2.arr_val.length; i++) {
+          stack_push(item2.arr_val.items[i]);
+          execute_string(&item1.str_val);
+        }
+      }
+      free(item2.arr_val.items);
+      free(item1.str_val.str_data);
+    }
+  }
+  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
+    if (item1.type == TYPE_STRING) {
+      Item joined_str = make_string("");
+      for (uint32_t i = 0; i < item2.str_val.length; i++) {
+        string_add_char(&joined_str.str_val, item2.str_val.str_data[i]);
+        if (i + 1 < item2.str_val.length) {
+          string_add_str(&joined_str.str_val, item1.str_val.str_data);
+        }
+      }
+      free(item1.str_val.str_data);
+      free(item2.str_val.str_data);
+      stack_push(joined_str);
+    }
+    else if (item1.type == TYPE_BLOCK) {
+      if (item2.type == TYPE_BLOCK) {
+        swap_items(&item1, &item2);
+      }
+      if (item2.str_val.length == 0) {
+        fprintf(stderr, "Error! Cannot map over an empty string!\n");
+        exit(1);
+      }
+      stack_push(make_integer(item2.str_val.str_data[0]));
+      for (uint32_t i = 1; i < item2.str_val.length; i++) {
+        stack_push(make_integer(item2.str_val.str_data[i]));
+        execute_string(&item1.str_val);
+      }
+      free(item2.str_val.str_data);
+      free(item1.str_val.str_data);
+    }
+  }
+}
+
 void builtin_at() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
@@ -253,27 +344,8 @@ void builtin_plus() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
 
-  coerce_types(&item1, &item2);
-
-  if (item2.type == TYPE_INTEGER) {
-    item2.int_val += item1.int_val;
-  }
-  else if (item2.type == TYPE_STRING) {
-    string_add_str(&item2.str_val, item1.str_val.str_data);
-    free(item1.str_val.str_data);
-  }
-  else if (item2.type == TYPE_BLOCK) {
-    string_add_char(&item2.str_val, ' ');
-    string_add_str(&item2.str_val, item1.str_val.str_data);
-    free(item1.str_val.str_data);
-  }
-  else if (item2.type == TYPE_ARRAY) {
-    for (uint32_t i = 0; i < item1.arr_val.length; i++) {
-      array_push(&item2.arr_val, item1.arr_val.items[i]);
-    }
-    free(item1.arr_val.items);
-  }
-
+  items_add(&item2, &item1);
+  free_item(&item1);
   stack_push(item2);
 }
 

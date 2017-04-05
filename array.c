@@ -19,6 +19,28 @@ void array_push(Array *arr, Item item) {
   arr->items[arr->length++] = item;
 }
 
+void array_multiply(Array *array, int64_t factor) {
+  if (factor < 0) {
+    fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
+    exit(1);
+  }
+  uint32_t new_len = array->length * factor;
+  if (new_len > array->allocated) {
+    while (new_len > array->allocated) {
+      array->allocated <<= 1;
+    }
+    array->items = realloc(array->items, sizeof(Item) * array->allocated);
+  }
+  uint32_t cur_len = array->length;
+  while (factor-- > 0) {
+    for (uint32_t i = 0; i < array->length; i++) {
+      array->items[i + cur_len] = make_copy(&array->items[i]);
+    }
+    cur_len += array->length;
+  }
+  array->length = new_len;
+}
+
 // Removes array members from array if they are present in to_subtract
 void array_subtract(Array *array, Array *to_subtract) {
   uint32_t items_removed = 0;

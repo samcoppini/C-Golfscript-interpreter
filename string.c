@@ -17,7 +17,7 @@ String new_string() {
 String create_string(char *to_copy) {
   size_t old_len = strlen(to_copy);
   uint32_t new_len = STRING_INIT_SIZE;
-  while (new_len + 1 < old_len) {
+  while (new_len - 1 < old_len) {
     new_len <<= 1;
   }
   String str = {malloc(new_len), old_len, new_len};
@@ -55,6 +55,29 @@ void string_add_str(String *str, char *to_append) {
   }
   strcat(str->str_data + str->length, to_append);
   str->length += append_len;
+}
+
+void string_multiply(String *str, int64_t factor) {
+  if (factor < 0) {
+    fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
+    exit(1);
+  }
+  uint32_t new_len = str->length * factor;
+  if (new_len + 1 > str->allocated) {
+    while (new_len + 1 > str->allocated) {
+      str->allocated <<= 1;
+    }
+    str->str_data = realloc(str->str_data, str->allocated);
+  }
+  uint32_t cur_len = str->length;
+  while (factor-- > 0) {
+    for (uint32_t i = 0; i < str->length; i++) {
+      str->str_data[i + cur_len] = str->str_data[i];
+    }
+    cur_len += str->length;
+  }
+  str->length = new_len;
+  str->str_data[new_len] = '\0';
 }
 
 // Removes the characters in to_subtract from str
