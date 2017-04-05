@@ -63,14 +63,32 @@ String get_literal(Item *item) {
   else if (item->type == TYPE_STRING) {
     string_add_char(&str, '"');
     for (uint32_t i = 0; i < item->str_val.length; i++) {
-      if (item->str_val.str_data[i] == '"')
-        string_add_str(&str, "\\\"");
-      else if (item->str_val.str_data[i] == '\\')
-        string_add_str(&str, "\\\\");
-      else
-        string_add_char(&str, item->str_val.str_data[i]);
+      unsigned char c = item->str_val.str_data[i];
+      switch (c) {
+        case '"':    string_add_str(&str, "\\\""); break;
+        case '\\':   string_add_str(&str, "\\\\"); break;
+        case '\a':   string_add_str(&str, "\\a");  break;
+        case '\b':   string_add_str(&str, "\\b");  break;
+        case '\t':   string_add_str(&str, "\\t");  break;
+        case '\n':   string_add_str(&str, "\\n");  break;
+        case '\v':   string_add_str(&str, "\\v");  break;
+        case '\f':   string_add_str(&str, "\\f");  break;
+        case '\r':   string_add_str(&str, "\\r");  break;
+        case '\x1b': string_add_str(&str, "\\e");  break;
+        default:
+          if (c < 32 || c > 127) {
+            // If it's non-printing, output its hex representation
+            const char hex_digits[] = "0123456789ABCDEF";
+            string_add_str(&str, "\\x");
+            string_add_char(&str, hex_digits[(c & 0xF0) >> 4]);
+            string_add_char(&str, hex_digits[(c & 0x0F)]);
+          }
+          else {
+            string_add_char(&str, c);
+          }
+          break;
+      }
     }
-    string_add_char(&str, '"');
   }
   else if (item->type == TYPE_BLOCK) {
     string_add_char(&str, '{');
