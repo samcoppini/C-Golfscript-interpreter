@@ -12,13 +12,18 @@ Item make_integer(int64_t int_val) {
   return item;
 }
 
-Item make_string(char *str_val) {
-  Item item = {TYPE_STRING, .str_val = create_string(str_val)};
+Item make_string(String *str_val) {
+  Item item = {TYPE_STRING, .str_val = copy_string(str_val)};
   return item;
 }
 
-Item make_block(char *str_val) {
-  Item item = {TYPE_BLOCK, .str_val = create_string(str_val)};
+Item empty_string() {
+  Item item = {TYPE_STRING, .str_val = new_string()};
+  return item;
+}
+
+Item make_block(String str_val) {
+  Item item = {TYPE_BLOCK, .str_val = copy_string(&str_val)};
   return item;
 }
 
@@ -65,21 +70,21 @@ String get_literal(Item *item) {
     for (uint32_t i = 0; i < item->str_val.length; i++) {
       unsigned char c = item->str_val.str_data[i];
       switch (c) {
-        case '"':    string_add_str(&str, "\\\""); break;
-        case '\\':   string_add_str(&str, "\\\\"); break;
-        case '\a':   string_add_str(&str, "\\a");  break;
-        case '\b':   string_add_str(&str, "\\b");  break;
-        case '\t':   string_add_str(&str, "\\t");  break;
-        case '\n':   string_add_str(&str, "\\n");  break;
-        case '\v':   string_add_str(&str, "\\v");  break;
-        case '\f':   string_add_str(&str, "\\f");  break;
-        case '\r':   string_add_str(&str, "\\r");  break;
-        case '\x1b': string_add_str(&str, "\\e");  break;
+        case '"':    string_add_c_str(&str, "\\\""); break;
+        case '\\':   string_add_c_str(&str, "\\\\"); break;
+        case '\a':   string_add_c_str(&str, "\\a");  break;
+        case '\b':   string_add_c_str(&str, "\\b");  break;
+        case '\t':   string_add_c_str(&str, "\\t");  break;
+        case '\n':   string_add_c_str(&str, "\\n");  break;
+        case '\v':   string_add_c_str(&str, "\\v");  break;
+        case '\f':   string_add_c_str(&str, "\\f");  break;
+        case '\r':   string_add_c_str(&str, "\\r");  break;
+        case '\x1b': string_add_c_str(&str, "\\e");  break;
         default:
           if (c < 32 || c > 127) {
             // If it's non-printing, output its hex representation
             const char hex_digits[] = "0123456789ABCDEF";
-            string_add_str(&str, "\\x");
+            string_add_c_str(&str, "\\x");
             string_add_char(&str, hex_digits[(c & 0xF0) >> 4]);
             string_add_char(&str, hex_digits[(c & 0x0F)]);
           }
@@ -92,14 +97,14 @@ String get_literal(Item *item) {
   }
   else if (item->type == TYPE_BLOCK) {
     string_add_char(&str, '{');
-    string_add_str(&str, item->str_val.str_data);
+    string_add_str(&str, &item->str_val);
     string_add_char(&str, '}');
   }
   else if (item->type == TYPE_ARRAY) {
     string_add_char(&str, '[');
     for (uint32_t i = 0; i < item->arr_val.length; i++) {
       String item_string = get_literal(&item->arr_val.items[i]);
-      string_add_str(&str, item_string.str_data);
+      string_add_str(&str, &item_string);
       free(item_string.str_data);
       if (i + 1 < item->arr_val.length) {
         string_add_char(&str, ' ');
@@ -147,7 +152,7 @@ int item_compare(Item *item1, Item *item2) {
 
     case TYPE_STRING:
     case TYPE_BLOCK:
-      return strcmp(item1->str_val.str_data, item2->str_val.str_data);
+      return string_compare(&item1->str_val, &item2->str_val);
 
     case TYPE_ARRAY:
       for (uint32_t i = 0; i < item1->arr_val.length; i++) {
@@ -180,11 +185,11 @@ void items_add(Item *item1, Item *item2) {
     item1->int_val += item2->int_val;
   }
   else if (item1->type == TYPE_STRING) {
-    string_add_str(&item1->str_val, item2->str_val.str_data);
+    string_add_str(&item1->str_val, &item2->str_val);
   }
   else if (item1->type == TYPE_BLOCK) {
     string_add_char(&item1->str_val, ' ');
-    string_add_str(&item1->str_val, item2->str_val.str_data);
+    string_add_str(&item1->str_val, &item2->str_val);
   }
   else if (item1->type == TYPE_ARRAY) {
     for (uint32_t i = 0; i < item2->arr_val.length; i++) {
@@ -217,10 +222,16 @@ void output_item(Item *item) {
     printf("%lld", item->int_val);
   }
   else if (item->type == TYPE_STRING) {
-    printf("%s", item->str_val);
+    for (uint32_t i = 0; i < item->str_val.length; i++) {
+      putchar(item->str_val.str_data[i]);
+    }
   }
   else if (item->type == TYPE_BLOCK) {
-    printf("{%s}", item->str_val);
+    putchar('{');
+    for (uint32_t i = 0; i < item->str_val.length; i++) {
+      putchar(item->str_val.str_data[i]);
+    }
+    putchar('}');
   }
   else if (item->type == TYPE_ARRAY) {
     for (uint32_t i = 0; i < item->arr_val.length; i++) {
@@ -238,12 +249,12 @@ String array_to_string(Item *array) {
     if (cur_item->type == TYPE_INTEGER)
       string_add_char(&str, cur_item->int_val);
     else if (cur_item->type == TYPE_STRING)
-      string_add_str(&str, cur_item->str_val.str_data);
+      string_add_str(&str, &cur_item->str_val);
     else if (cur_item->type == TYPE_BLOCK)
-      string_add_str(&str, cur_item->str_val.str_data);
+      string_add_str(&str, &cur_item->str_val);
     else if (cur_item->type == TYPE_ARRAY) {
       String array_str = array_to_string(cur_item);
-      string_add_str(&str, array_str.str_data);
+      string_add_str(&str, &array_str);
       free(array_str.str_data);
     }
   }
@@ -272,16 +283,16 @@ void coerce_types(Item *item1, Item *item2) {
       for (uint32_t i = 0; i < item2->arr_val.length; i++) {
         Item *cur_item = &item2->arr_val.items[i];
         if (cur_item->type == TYPE_STRING ||cur_item->type == TYPE_BLOCK) {
-          string_add_str(&block_str, cur_item->str_val.str_data);
+          string_add_str(&block_str, &cur_item->str_val);
         }
         else if (cur_item->type == TYPE_ARRAY) {
           String arr_str = array_to_string(cur_item);
-          string_add_str(&block_str, arr_str.str_data);
+          string_add_str(&block_str, &arr_str);
           free(arr_str.str_data);
         }
         else if (cur_item->type == TYPE_INTEGER) {
           String int_str = int_to_string(cur_item->int_val);
-          string_add_str(&block_str, int_str.str_data);
+          string_add_str(&block_str, &int_str);
           free(int_str.str_data);
         }
         if (i + 1 < item2->arr_val.length)

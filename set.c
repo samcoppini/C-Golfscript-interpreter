@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include "golf.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-
 Set new_set() {
   Set set = {NULL};
   return set;

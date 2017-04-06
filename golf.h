@@ -9,6 +9,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
 // An enumeration of the types an item can be
 enum Type {
   TYPE_INTEGER,
@@ -46,7 +49,7 @@ typedef struct Item {
 // A simple hash table
 // Used for assigned values and builtin functions
 typedef struct Map {
-  char **keys;
+  String **keys;
   Item *items;
   uint32_t num_items, allocated;
 } Map;
@@ -103,8 +106,9 @@ void builtin_while();
 
 // item.c
 Item make_integer(int64_t int_val);
-Item make_string(char *str_val);
-Item make_block(char *str_val);
+Item make_string(String *str_val);
+Item empty_string();
+Item make_block(String str_val);
 Item make_array();
 Item make_builtin(void (*function)());
 Item make_copy(Item *item);
@@ -129,9 +133,9 @@ void output_final_stack();
 
 // map.c
 Map new_map();
-bool map_has(Map *map, char *key);
-void map_set(Map *map, char *key, Item item);
-Item *map_get(Map *map, char *key);
+bool map_has(Map *map, String *key);
+void map_set(Map *map, String key, Item item);
+Item *map_get(Map *map, String *key);
 
 // set.c
 Set new_set();
@@ -142,10 +146,14 @@ void set_remove(Set *set, Item *item);
 
 // string.c
 String new_string();
+String copy_string(String *str);
 String create_string(char *str);
+int string_compare(String *str1, String *str2);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
-void string_add_str(String *str, char *to_append);
+void string_add_str(String *str, String *to_append);
+void string_add_c_str(String *str, char *to_append);
+void string_remove_front(String *str);
 int64_t string_find_char(String *str, char c);
 int64_t string_find_str(String *str, String *to_find);
 void string_multiply(String *str, int64_t factor);
@@ -154,6 +162,7 @@ void string_setwise_and(String *str, String *to_and);
 void string_setwise_or(String *str, String *to_or);
 void string_setwise_xor(String *str, String *to_xor);
 String int_to_string(int64_t int_val);
+int64_t string_to_int(String *str);
 String read_file_to_string(FILE *file);
 
 #endif

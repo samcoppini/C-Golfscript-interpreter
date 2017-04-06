@@ -20,7 +20,7 @@ void init_interpreter() {
   // Pushes the input onto the stack
   // If input is not being piped into the program, it pushes an empty string
   if (isatty(STDIN_FILENO)) {
-    stack_push(make_string(""));
+    stack_push(empty_string());
   }
   else {
     Item first_item = {TYPE_STRING, .str_val = read_file_to_string(stdin)};
@@ -33,36 +33,41 @@ void init_interpreter() {
 
   // Initializes the built-in functions
   definitions = new_map();
-  map_set(&definitions, "&",     make_builtin(builtin_ampersand));
-  map_set(&definitions, "*",     make_builtin(builtin_asterisk));
-  map_set(&definitions, "@",     make_builtin(builtin_at));
-  map_set(&definitions, "\\",    make_builtin(builtin_backslash));
-  map_set(&definitions, "`",     make_builtin(builtin_backtick));
-  map_set(&definitions, "|",     make_builtin(builtin_bar));
-  map_set(&definitions, "^",     make_builtin(builtin_caret));
-  map_set(&definitions, ",",     make_builtin(builtin_comma));
-  map_set(&definitions, "!",     make_builtin(builtin_exclamation));
-  map_set(&definitions, "[",     make_builtin(builtin_lbracket));
-  map_set(&definitions, "(",     make_builtin(builtin_lparen));
-  map_set(&definitions, "-",     make_builtin(builtin_minus));
-  map_set(&definitions, "?",     make_builtin(builtin_question));
-  map_set(&definitions, ".",     make_builtin(builtin_period));
-  map_set(&definitions, "+",     make_builtin(builtin_plus));
-  map_set(&definitions, "]",     make_builtin(builtin_rbracket));
-  map_set(&definitions, ")",     make_builtin(builtin_rparen));
-  map_set(&definitions, ";",     make_builtin(builtin_semicolon));
-  map_set(&definitions, "~",     make_builtin(builtin_tilde));
-  map_set(&definitions, "abs",   make_builtin(builtin_abs));
-  map_set(&definitions, "do",    make_builtin(builtin_do));
-  map_set(&definitions, "if",    make_builtin(builtin_if));
-  map_set(&definitions, "print", make_builtin(builtin_print));
-  map_set(&definitions, "rand",  make_builtin(builtin_rand));
-  map_set(&definitions, "until", make_builtin(builtin_until));
-  map_set(&definitions, "while", make_builtin(builtin_while));
+  map_set(&definitions, create_string("&"), make_builtin(builtin_ampersand));
+  map_set(&definitions, create_string("*"), make_builtin(builtin_asterisk));
+  map_set(&definitions, create_string("@"), make_builtin(builtin_at));
+  map_set(&definitions, create_string("\\"), make_builtin(builtin_backslash));
+  map_set(&definitions, create_string("`"), make_builtin(builtin_backtick));
+  map_set(&definitions, create_string("|"), make_builtin(builtin_bar));
+  map_set(&definitions, create_string("^"), make_builtin(builtin_caret));
+  map_set(&definitions, create_string(","), make_builtin(builtin_comma));
+  map_set(&definitions, create_string("!"), make_builtin(builtin_exclamation));
+  map_set(&definitions, create_string("["), make_builtin(builtin_lbracket));
+  map_set(&definitions, create_string("("), make_builtin(builtin_lparen));
+  map_set(&definitions, create_string("-"), make_builtin(builtin_minus));
+  map_set(&definitions, create_string("?"), make_builtin(builtin_question));
+  map_set(&definitions, create_string("."), make_builtin(builtin_period));
+  map_set(&definitions, create_string("+"), make_builtin(builtin_plus));
+  map_set(&definitions, create_string("]"), make_builtin(builtin_rbracket));
+  map_set(&definitions, create_string(")"), make_builtin(builtin_rparen));
+  map_set(&definitions, create_string(";"), make_builtin(builtin_semicolon));
+  map_set(&definitions, create_string("~"), make_builtin(builtin_tilde));
+  map_set(&definitions, create_string("abs"), make_builtin(builtin_abs));
+  map_set(&definitions, create_string("do"), make_builtin(builtin_do));
+  map_set(&definitions, create_string("if"), make_builtin(builtin_if));
+  map_set(&definitions, create_string("print"), make_builtin(builtin_print));
+  map_set(&definitions, create_string("rand"), make_builtin(builtin_rand));
+  map_set(&definitions, create_string("until"), make_builtin(builtin_until));
+  map_set(&definitions, create_string("while"), make_builtin(builtin_while));
 
-  map_set(&definitions, "n",    make_block("\"\n\""));
-  map_set(&definitions, "puts", make_block("print n print"));
-  map_set(&definitions, "p",    make_block("`puts"));
+  map_set(&definitions, create_string("n"),
+          make_block(create_string("\"\n\"")));
+
+  map_set(&definitions, create_string("puts"),
+          make_block(create_string("print n print")));
+
+  map_set(&definitions, create_string("p"),
+          make_block(create_string("`puts")));
 
   // Initializes random number generator for the rand function
   srand(time(NULL));
@@ -152,9 +157,10 @@ String next_token(String *str, uint32_t *code_pos) {
   else if (c == '\'') {
     do {
       if (c == '\\') {
-        if (str->str_data[*code_pos + 1] == '\'') {
-          c = '\'';
-          *code_pos += 1;
+        if (str->str_data[*code_pos + 1] == '\'' ||
+            str->str_data[*code_pos + 1] == '\\')
+        {
+          c = str->str_data[++(*code_pos)];
         }
       }
       string_add_char(&token, c);
@@ -225,8 +231,8 @@ void execute_string(String *str) {
 
   while (code_pos < str->length) {
     String tok = next_token(str, &code_pos);
-    if (map_has(&definitions, tok.str_data)) {
-      execute_item(map_get(&definitions, tok.str_data));
+    if (map_has(&definitions, &tok)) {
+      execute_item(map_get(&definitions, &tok));
     }
     else if (tok.str_data[0] == ':') {
       if (stack.length == 0) {
@@ -239,19 +245,20 @@ void execute_string(String *str) {
       }
       Item top_item = make_copy(&stack.items[stack.length - 1]);
       String to_define = next_token(str, &code_pos);
-      map_set(&definitions, to_define.str_data, top_item);
-      free(to_define.str_data);
+      map_set(&definitions, to_define, top_item);
     }
     else if (isdigit(tok.str_data[0]) ||
              (tok.str_data[0] == '-' && tok.length > 1))
     {
-      stack_push(make_integer(atoll(tok.str_data)));
+      stack_push(make_integer(string_to_int(&tok)));
     }
     else if (tok.str_data[0] == '"' || tok.str_data[0] == '\'') {
-      stack_push(make_string(tok.str_data + 1));
+      string_remove_front(&tok);
+      stack_push(make_string(&tok));
     }
     else if (tok.str_data[0] == '{') {
-      stack_push(make_block(tok.str_data + 1));
+      string_remove_front(&tok);
+      stack_push(make_block(tok));
     }
     free(tok.str_data);
   }

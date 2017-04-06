@@ -9,20 +9,40 @@
 
 String new_string() {
   String str = {malloc(STRING_INIT_SIZE), 0, STRING_INIT_SIZE};
-  str.str_data[0] = '\0';
   return str;
+}
+
+String copy_string(String *str) {
+  String new_str = {malloc(str->allocated), str->length, str->allocated};
+  memcpy(new_str.str_data, str->str_data, str->length);
+  return new_str;
 }
 
 // Creates a String from a C string
 String create_string(char *to_copy) {
   size_t old_len = strlen(to_copy);
   uint32_t new_len = STRING_INIT_SIZE;
-  while (new_len - 1 < old_len) {
+  while (new_len < old_len) {
     new_len <<= 1;
   }
   String str = {malloc(new_len), old_len, new_len};
   strcpy(str.str_data, to_copy);
   return str;
+}
+
+int string_compare(String *str1, String *str2) {
+  uint32_t min_len = min(str1->length, str2->length);
+  int result = strncmp(str1->str_data, str2->str_data, min_len);
+
+  if (result != 0)
+    return result;
+
+  if (str1->length < str2->length)
+    return -1;
+  else if (str1->length > str2->length)
+    return 1;
+  else
+    return 0;
 }
 
 // Reverses a string in-place
@@ -36,16 +56,29 @@ void string_reverse(String *str) {
 
 // Adds a character to the end of a string
 void string_add_char(String *str, char c) {
-  if (str->length + 1 >= str->allocated) {
+  if (str->length >= str->allocated) {
     str->allocated <<= 1;
     str->str_data = realloc(str->str_data, str->allocated);
   }
   str->str_data[str->length++] = c;
-  str->str_data[str->length] = '\0';
 }
 
-// Adds a C string to the end of a String
-void string_add_str(String *str, char *to_append) {
+// Adds a string to the end of a string
+void string_add_str(String *str, String *to_append) {
+  if (str->length + to_append->length >= str->allocated) {
+    while (str->length + to_append->length >= str->allocated) {
+      str->allocated <<= 1;
+    }
+    str->str_data = realloc(str->str_data, str->allocated);
+  }
+  for (uint32_t i = 0; i < to_append->length; i++) {
+    str->str_data[str->length + i] = to_append->str_data[i];
+  }
+  str->length += to_append->length;
+}
+
+// Adds an old-school null-terminated C string to the end of a string
+void string_add_c_str(String *str, char *to_append) {
   size_t append_len = strlen(to_append);
   if (str->length + append_len >= str->allocated) {
     while (str->length + append_len >= str->allocated) {
@@ -53,7 +86,9 @@ void string_add_str(String *str, char *to_append) {
     }
     str->str_data = realloc(str->str_data, str->allocated);
   }
-  strcat(str->str_data + str->length, to_append);
+  for (uint32_t i = 0; i < append_len; i++) {
+    str->str_data[str->length + i] = to_append[i];
+  }
   str->length += append_len;
 }
 
@@ -73,14 +108,24 @@ int64_t string_find_str(String *str, String *to_find) {
   return -1;
 }
 
+void string_remove_front(String *str) {
+  if (str->length == 0)
+    return;
+
+  str->length--;
+  for (uint32_t i = 0; i < str->length; i++) {
+    str->str_data[i] = str->str_data[i + 1];
+  }
+}
+
 void string_multiply(String *str, int64_t factor) {
   if (factor < 0) {
     fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
     exit(1);
   }
   uint32_t new_len = str->length * factor;
-  if (new_len + 1 > str->allocated) {
-    while (new_len + 1 > str->allocated) {
+  if (new_len > str->allocated) {
+    while (new_len > str->allocated) {
       str->allocated <<= 1;
     }
     str->str_data = realloc(str->str_data, str->allocated);
@@ -93,7 +138,6 @@ void string_multiply(String *str, int64_t factor) {
     cur_len += str->length;
   }
   str->length = new_len;
-  str->str_data[new_len] = '\0';
 }
 
 // Removes the characters in to_subtract from str
@@ -112,7 +156,6 @@ void string_subtract(String *str, String *to_subtract) {
     }
   }
   str->length -= chars_removed;
-  str->str_data[str->length] = '\0';
 }
 
 // Removes all characters from str that aren't in to_and, and removes
@@ -133,7 +176,6 @@ void string_setwise_and(String *str, String *to_and) {
     }
   }
   str->length -= chars_removed;
-  str->str_data[str->length] = '\0';
 }
 
 // Replaces str with the union of str and to_or
@@ -150,7 +192,6 @@ void string_setwise_or(String *str, String *to_or) {
     }
   }
   str->length -= chars_removed;
-  str->str_data[str->length] = '\0';
   for (uint32_t i = 0; i < to_or->length; i++) {
     if (!present_chars[(unsigned) to_or->str_data[i]]) {
       present_chars[(unsigned) to_or->str_data[i]] = true;
@@ -181,7 +222,6 @@ void string_setwise_xor(String *str, String *to_xor) {
     }
   }
   str->length -= chars_removed;
-  str->str_data[str->length] = 0;
   for (uint32_t i = 0; i < to_xor->length; i++) {
     if (!in_string1[(unsigned) to_xor->str_data[i]] &&
          in_string2[(unsigned) to_xor->str_data[i]])
@@ -212,6 +252,24 @@ String int_to_string(int64_t int_val) {
   string_reverse(&str);
 
   return str;
+}
+
+// Converts a string to an integer, assuming it represents an int
+int64_t string_to_int(String *str) {
+  int64_t val = 0;
+  uint32_t cur_pos = 0;
+  bool was_negative = false;
+  if (str->str_data[0] == '-') {
+    was_negative = true;
+    cur_pos++;
+  }
+  while (cur_pos < str->length) {
+    val *= 10;
+    val += str->str_data[cur_pos++] - '0';
+  }
+  if (was_negative)
+    val *= -1;
+  return val;
 }
 
 // Reads the complete contents of a file to a string

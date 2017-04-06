@@ -69,8 +69,13 @@ void builtin_asterisk() {
   }
   else if (item2.type == TYPE_ARRAY) {
     if (item1.type == TYPE_ARRAY || item1.type == TYPE_STRING) {
-      Item joined_array = item1.type == TYPE_ARRAY ? make_array()
-                                                   : make_string("");
+      Item joined_array;
+
+      if (item1.type == TYPE_ARRAY)
+        joined_array = make_array();
+      else
+        joined_array = empty_string();
+
       for (uint32_t i = 0; i < item2.arr_val.length; i++) {
         Item to_add = make_copy(&item2.arr_val.items[i]);
         items_add(&joined_array, &to_add);
@@ -101,11 +106,11 @@ void builtin_asterisk() {
   }
   else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
     if (item1.type == TYPE_STRING) {
-      Item joined_str = make_string("");
+      Item joined_str = empty_string();
       for (uint32_t i = 0; i < item2.str_val.length; i++) {
         string_add_char(&joined_str.str_val, item2.str_val.str_data[i]);
         if (i + 1 < item2.str_val.length) {
-          string_add_str(&joined_str.str_val, item1.str_val.str_data);
+          string_add_str(&joined_str.str_val, &item1.str_val);
         }
       }
       free(item1.str_val.str_data);
