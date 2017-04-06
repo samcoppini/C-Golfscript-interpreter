@@ -45,9 +45,9 @@ void init_interpreter() {
   map_set(&definitions, create_string("["), make_builtin(builtin_lbracket));
   map_set(&definitions, create_string("("), make_builtin(builtin_lparen));
   map_set(&definitions, create_string("-"), make_builtin(builtin_minus));
-  map_set(&definitions, create_string("?"), make_builtin(builtin_question));
   map_set(&definitions, create_string("."), make_builtin(builtin_period));
   map_set(&definitions, create_string("+"), make_builtin(builtin_plus));
+  map_set(&definitions, create_string("?"), make_builtin(builtin_question));
   map_set(&definitions, create_string("]"), make_builtin(builtin_rbracket));
   map_set(&definitions, create_string(")"), make_builtin(builtin_rparen));
   map_set(&definitions, create_string(";"), make_builtin(builtin_semicolon));

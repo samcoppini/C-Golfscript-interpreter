@@ -339,6 +339,27 @@ void builtin_lparen() {
   }
 }
 
+void builtin_period() {
+  Item item = stack_pop();
+  stack_push(make_copy(&item));
+  stack_push(item);
+}
+
+void builtin_plus() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  items_add(&item2, &item1);
+  free_item(&item1);
+  stack_push(item2);
+}
+
+void builtin_print() {
+  Item item = stack_pop();
+  output_item(&item);
+  free_item(&item);
+}
+
 void builtin_question() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
@@ -426,27 +447,6 @@ void builtin_question() {
       free_item(&item2);
     }
   }
-}
-
-void builtin_period() {
-  Item item = stack_pop();
-  stack_push(make_copy(&item));
-  stack_push(item);
-}
-
-void builtin_plus() {
-  Item item1 = stack_pop();
-  Item item2 = stack_pop();
-
-  items_add(&item2, &item1);
-  free_item(&item1);
-  stack_push(item2);
-}
-
-void builtin_print() {
-  Item item = stack_pop();
-  output_item(&item);
-  free_item(&item);
 }
 
 void builtin_rand() {
