@@ -191,11 +191,11 @@ String next_token(String *str, uint32_t *code_pos) {
       c = str->str_data[++(*code_pos)];
     } while (isdigit(c));
   }
-  else if (isalpha(c)) {
+  else if (isalpha(c) || c == '_') {
     do {
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
-    } while (isalnum(c));
+    } while (isalnum(c) || c == '_');
   }
   else if (c == '{') {
     int brace_level = 1;
