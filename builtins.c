@@ -61,7 +61,7 @@ void builtin_asterisk() {
       stack_push(item1);
     }
     else if (item1.type == TYPE_BLOCK) {
-      while (item1.int_val-- > 0) {
+      while (item2.int_val-- > 0) {
         execute_string(&item1.str_val);
       }
       free(item1.str_val.str_data);
