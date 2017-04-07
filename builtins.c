@@ -444,7 +444,7 @@ void builtin_percent() {
     }
   }
   else if (item1.type == TYPE_BLOCK && item2.type == TYPE_BLOCK) {
-    fprintf(stderr, "Error! %% operation undefined for two maps!\n");
+    fprintf(stderr, "Error! %% operation undefined for two blocks!\n");
     exit(1);
   }
 }
