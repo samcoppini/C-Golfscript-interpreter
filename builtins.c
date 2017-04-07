@@ -258,6 +258,45 @@ void builtin_do() {
   free_item(&block);
 }
 
+void builtin_equal() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type < item2.type) {
+    swap_items(&item1, &item2);
+  }
+
+  if (item2.type == TYPE_INTEGER) {
+    if (item1.type == TYPE_INTEGER) {
+      stack_push(make_integer(items_equal(&item1, &item2)));
+    }
+    else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
+      if (item2.int_val < 0) {
+        item2.int_val = item1.str_val.length + item2.int_val;
+      }
+      if (item2.int_val < item1.str_val.length && item2.int_val >= 0) {
+        stack_push(make_integer(item1.str_val.str_data[item2.int_val]));
+      }
+      free_item(&item1);
+    }
+    else if (item1.type == TYPE_ARRAY) {
+      if (item2.int_val < 0) {
+        item2.int_val = item1.arr_val.length + item2.int_val;
+      }
+      if (item2.int_val < item1.arr_val.length && item2.int_val >= 0) {
+        stack_push(make_copy(&item1.arr_val.items[item2.int_val]));
+      }
+      free_item(&item1);
+    }
+  }
+  else {
+    coerce_types(&item1, &item2);
+    stack_push(make_integer(items_equal(&item1, &item2)));
+    free_item(&item1);
+    free_item(&item2);
+  }
+}
+
 void builtin_exclamation() {
   Item item = stack_pop();
   stack_push(make_integer(!item_boolean(&item)));

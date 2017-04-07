@@ -41,6 +41,7 @@ void init_interpreter() {
   map_set(&definitions, create_string("|"), make_builtin(builtin_bar));
   map_set(&definitions, create_string("^"), make_builtin(builtin_caret));
   map_set(&definitions, create_string(","), make_builtin(builtin_comma));
+  map_set(&definitions, create_string("="), make_builtin(builtin_equal));
   map_set(&definitions, create_string("!"), make_builtin(builtin_exclamation));
   map_set(&definitions, create_string("["), make_builtin(builtin_lbracket));
   map_set(&definitions, create_string("("), make_builtin(builtin_lparen));

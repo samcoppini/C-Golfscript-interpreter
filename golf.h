@@ -90,6 +90,7 @@ void builtin_bar();
 void builtin_caret();
 void builtin_comma();
 void builtin_do();
+void builtin_equal();
 void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();
