@@ -46,7 +46,7 @@ Item make_copy(Item *item) {
   if (item->type == TYPE_INTEGER)
     new_item.int_val = item->int_val;
   else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK)
-    new_item.str_val = create_string(item->str_val.str_data);
+    new_item.str_val = copy_string(&item->str_val);
   else if (item->type == TYPE_ARRAY) {
     new_item.arr_val = new_array();
     for (uint32_t i = 0; i < item->arr_val.length; i++) {
