@@ -130,7 +130,7 @@ Item string_split(String *str, String *sep) {
   Item arr = make_array();
   Item cur_string = empty_string();
 
-  for (uint32_t i = 0; i < str->length - sep->length; i++) {
+  for (uint32_t i = 0; i < str->length - sep->length + 1; i++) {
     if (strncmp(str->str_data + i, sep->str_data, sep->length) == 0) {
       array_push(&arr.arr_val, cur_string);
       cur_string = empty_string();
@@ -141,6 +141,34 @@ Item string_split(String *str, String *sep) {
   }
   array_push(&arr.arr_val, cur_string);
   return arr;
+}
+
+Item string_split_into_groups(String *str, int64_t group_size) {
+  Item array = make_array();
+  Item cur_string = empty_string();
+
+  if (group_size < 0) {
+    string_reverse(str);
+    group_size *= -1;
+  }
+  else if (group_size == 0) {
+    fprintf(stderr, "Error! Cannot split string into groups of size 0!\n");
+    exit(1);
+  }
+
+  for (uint32_t i = 0; i < str->length; i++) {
+    string_add_char(&cur_string.str_val, str->str_data[i]);
+    if (cur_string.str_val.length == group_size) {
+      array_push(&array.arr_val, cur_string);
+      cur_string = empty_string();
+    }
+  }
+
+  if (cur_string.str_val.length > 0) {
+    array_push(&array.arr_val, cur_string);
+  }
+
+  return array;
 }
 
 void string_remove_front(String *str) {

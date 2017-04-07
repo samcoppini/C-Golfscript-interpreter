@@ -626,6 +626,99 @@ void builtin_semicolon() {
   free_item(&item);
 }
 
+void builtin_slash() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type < item2.type)
+    swap_items(&item1, &item2);
+
+  if (item1.type == TYPE_INTEGER) {
+    if (item2.type == TYPE_INTEGER) {
+      item2.int_val /= item1.int_val;
+      stack_push(item2);
+    }
+  }
+  else if (item1.type == TYPE_ARRAY) {
+    if (item2.type == TYPE_INTEGER) {
+      Item split_array = array_split_into_groups(&item1.arr_val, item2.int_val);
+      stack_push(split_array);
+      free(item1.arr_val.items);
+    }
+    else if (item1.type == TYPE_ARRAY) {
+      array_split(&item2.arr_val, &item1.arr_val);
+      free_item(&item1);
+      stack_push(item2);
+    }
+  }
+  else if (item1.type == TYPE_STRING) {
+    if (item2.type == TYPE_INTEGER) {
+      Item split_str = string_split_into_groups(&item1.str_val, item2.int_val);
+      stack_push(split_str);
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_ARRAY) {
+      Item array = make_array();
+      for (uint32_t i = 0; i < item1.str_val.length; i++) {
+        array_push(&array.arr_val, make_integer(item1.str_val.str_data[i]));
+      }
+      array_split(&array.arr_val, &item2.arr_val);
+      stack_push(array);
+      free_item(&item1);
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_STRING) {
+      Item split_str = string_split(&item2.str_val, &item1.str_val);
+      stack_push(split_str);
+      free_item(&item1);
+      free_item(&item2);
+    }
+  }
+  else if (item1.type == TYPE_BLOCK) {
+    if (item2.type == TYPE_ARRAY) {
+      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
+        stack_push(item2.arr_val.items[i]);
+        execute_string(&item1.str_val);
+      }
+      free(item2.arr_val.items);
+      free(item1.str_val.str_data);
+    }
+    else if (item2.type == TYPE_STRING) {
+      for (uint32_t i = 0; i < item2.str_val.length; i++) {
+        stack_push(make_integer(item2.str_val.str_data[i]));
+        execute_string(&item1.str_val);
+      }
+      free(item2.str_val.str_data);
+      free(item1.str_val.str_data);
+    }
+    else if (item2.type == TYPE_BLOCK) {
+      Item final_array = make_array();
+      Item top = stack_pop();
+      stack_push(make_copy(&top));
+      execute_item(&item2);
+      Item cond_item = stack_pop();
+      while (item_boolean(&cond_item)) {
+        free_item(&cond_item);
+        stack_push(make_copy(&top));
+        array_push(&final_array.arr_val, top);
+        execute_item(&item1);
+        top = stack_pop();
+        stack_push(make_copy(&top));
+        execute_item(&item2);
+        cond_item = stack_pop();
+      }
+      stack_push(final_array);
+      free_item(&cond_item);
+      free_item(&item1);
+      free_item(&item2);
+    }
+    else if (item2.type == TYPE_INTEGER) {
+      fprintf(stderr, "Error! Builtin / function undefined for block and int.\n");
+      exit(1);
+    }
+  }
+}
+
 void builtin_tilde() {
   Item item = stack_pop();
   if (item.type == TYPE_INTEGER) {

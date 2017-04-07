@@ -85,7 +85,7 @@ void array_split(Array *array, Array *sep) {
   Array split_array = new_array();
   Item cur_array = make_array();
   uint32_t i;
-  for (i = 0; i < array->length - sep->length; i++) {
+  for (i = 0; i < array->length - sep->length + 1; i++) {
     bool matched_sep = true;
     for (uint32_t j = 0; j < sep->length; j++) {
       if (!items_equal(&array->items[i + j], &sep->items[j])) {
@@ -94,8 +94,8 @@ void array_split(Array *array, Array *sep) {
       }
     }
     if (matched_sep) {
-      array_push(&split_array, make_copy(&cur_array));
-      cur_array.arr_val.length = 0;
+      array_push(&split_array, cur_array);
+      cur_array = make_array();
       for (uint32_t j = 0; j < sep->length; j++) {
         free_item(&array->items[i + j]);
       }
@@ -108,10 +108,36 @@ void array_split(Array *array, Array *sep) {
   while (i < array->length) {
     array_push(&cur_array.arr_val, array->items[i++]);
   }
-  array_push(&split_array, make_copy(&cur_array));
-  free_item(&cur_array);
+  array_push(&split_array, cur_array);
   free(array->items);
   *array = split_array;
+}
+
+Item array_split_into_groups(Array *array, int64_t group_len) {
+  Item split_array = make_array();
+  Item cur_array = make_array();
+  if (group_len < 0) {
+    array_reverse(array);
+    group_len *= -1;
+  }
+  else if (group_len == 0) {
+    fprintf(stderr, "Error! Cannot split into groups of size 0!\n");
+    exit(1);
+  }
+  for (uint32_t i = 0; i < array->length; i++) {
+    array_push(&cur_array.arr_val, array->items[i]);
+    if (cur_array.arr_val.length == group_len) {
+      array_push(&split_array.arr_val, cur_array);
+      cur_array = make_array();
+    }
+  }
+  if (cur_array.arr_val.length > 0) {
+    array_push(&split_array.arr_val, cur_array);
+  }
+  else {
+    free_item(&cur_array);
+  }
+  return split_array;
 }
 
 void array_step_over(Array *array, int64_t step_size) {

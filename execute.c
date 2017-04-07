@@ -52,6 +52,7 @@ void init_interpreter() {
   map_set(&definitions, create_string("]"), make_builtin(builtin_rbracket));
   map_set(&definitions, create_string(")"), make_builtin(builtin_rparen));
   map_set(&definitions, create_string(";"), make_builtin(builtin_semicolon));
+  map_set(&definitions, create_string("/"), make_builtin(builtin_slash));
   map_set(&definitions, create_string("~"), make_builtin(builtin_tilde));
   map_set(&definitions, create_string("abs"), make_builtin(builtin_abs));
   map_set(&definitions, create_string("do"), make_builtin(builtin_do));
