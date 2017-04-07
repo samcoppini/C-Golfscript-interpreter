@@ -29,6 +29,14 @@ int64_t array_find(Array *array, Item *item) {
   return -1;
 }
 
+void array_reverse(Array *array) {
+  for (uint32_t i = 0; i < array->length / 2; i++) {
+    Item temp = array->items[i];
+    array->items[i] = array->items[array->length - i - 1];
+    array->items[array->length - i - 1] = temp;
+  }
+}
+
 void array_multiply(Array *array, int64_t factor) {
   if (factor < 0) {
     fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
@@ -71,6 +79,62 @@ void array_subtract(Array *array, Array *to_subtract) {
   }
   array->length -= items_removed;
   free_set(&to_remove);
+}
+
+void array_split(Array *array, Array *sep) {
+  Array split_array = new_array();
+  Item cur_array = make_array();
+  uint32_t i;
+  for (i = 0; i < array->length - sep->length; i++) {
+    bool matched_sep = true;
+    for (uint32_t j = 0; j < sep->length; j++) {
+      if (!items_equal(&array->items[i + j], &sep->items[j])) {
+        matched_sep = false;
+        break;
+      }
+    }
+    if (matched_sep) {
+      array_push(&split_array, make_copy(&cur_array));
+      cur_array.arr_val.length = 0;
+      for (uint32_t j = 0; j < sep->length; j++) {
+        free_item(&array->items[i + j]);
+      }
+      i += sep->length - 1;
+    }
+    else {
+      array_push(&cur_array.arr_val, array->items[i]);
+    }
+  }
+  while (i < array->length) {
+    array_push(&cur_array.arr_val, array->items[i++]);
+  }
+  array_push(&split_array, make_copy(&cur_array));
+  free_item(&cur_array);
+  free(array->items);
+  *array = split_array;
+}
+
+void array_step_over(Array *array, int64_t step_size) {
+  if (step_size == 0) {
+    fprintf(stderr, "Error! Cannot select elements with 0 step size!\n");
+    exit(1);
+  }
+  else if (step_size < 0) {
+    array_reverse(array);
+    step_size *= -1;
+  }
+  if (step_size == 1) {
+    return;
+  }
+
+  for (uint32_t i = 1; i * step_size < array->length; i++) {
+    free_item(&array->items[i]);
+    array->items[i] = array->items[i * step_size];
+  }
+  for (uint32_t i = (array->length + 1) / step_size; i < array->length; i++) {
+    free_item(&array->items[i]);
+  }
+  array->length = (array->length + 1) / step_size;
 }
 
 // Replaces array with the intersection of array and to_and

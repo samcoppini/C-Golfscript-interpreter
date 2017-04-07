@@ -94,6 +94,7 @@ String get_literal(Item *item) {
           break;
       }
     }
+    string_add_char(&str, '"');
   }
   else if (item->type == TYPE_BLOCK) {
     string_add_char(&str, '{');

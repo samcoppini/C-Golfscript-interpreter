@@ -108,6 +108,41 @@ int64_t string_find_str(String *str, String *to_find) {
   return -1;
 }
 
+void string_step_over(String *str, int64_t step_size) {
+  if (step_size == 0) {
+    fprintf(stderr, "Error! Step size of string select must be nonzero!\n");
+    exit(1);
+  }
+  else if (step_size < 0) {
+    string_reverse(str);
+    step_size *= -1;
+  }
+  if (step_size == 1) {
+    return;
+  }
+  for (uint32_t i = 1; i * step_size < str->length; i++) {
+    str->str_data[i] = str->str_data[i * step_size];
+  }
+  str->length = (str->length + 1) / step_size;
+}
+
+Item string_split(String *str, String *sep) {
+  Item arr = make_array();
+  Item cur_string = empty_string();
+
+  for (uint32_t i = 0; i < str->length - sep->length; i++) {
+    if (strncmp(str->str_data + i, sep->str_data, sep->length) == 0) {
+      array_push(&arr.arr_val, cur_string);
+      cur_string = empty_string();
+    }
+    else {
+      string_add_char(&cur_string.str_val, str->str_data[i]);
+    }
+  }
+  array_push(&arr.arr_val, cur_string);
+  return arr;
+}
+
 void string_remove_front(String *str) {
   if (str->length == 0)
     return;
