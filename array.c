@@ -163,6 +163,105 @@ void array_step_over(Array *array, int64_t step_size) {
   array->length = (array->length + 1) / step_size;
 }
 
+Array get_sorted_indexes(Array *array, uint32_t start, uint32_t end) {
+  Array indexes = new_array();
+
+  if (start > end) {
+    return indexes;
+  }
+  if (end == start) {
+    array_push(&indexes, make_integer(start));
+  }
+  else if (end - start == 1) {
+    if (item_compare(&array->items[start], &array->items[end]) <= 0) {
+      array_push(&indexes, make_integer(start));
+      array_push(&indexes, make_integer(end));
+    }
+    else {
+      array_push(&indexes, make_integer(end));
+      array_push(&indexes, make_integer(start));
+    }
+  }
+  else {
+    uint32_t mid = ((end - start) / 2) + start;
+    Array first_half = get_sorted_indexes(array, start, mid);
+    Array second_half = get_sorted_indexes(array, mid + 1, end);
+
+    uint32_t first_index = 0;
+    uint32_t second_index = 0;
+
+    while (first_index < first_half.length && second_index < second_half.length)
+    {
+      if (item_compare(&array->items[first_half.items[first_index].int_val],
+                       &array->items[second_half.items[second_index].int_val])
+                       <= 0)
+      {
+        array_push(&indexes, first_half.items[first_index++]);
+      }
+      else {
+        array_push(&indexes, second_half.items[second_index++]);
+      }
+    }
+
+    while (first_index < first_half.length) {
+      array_push(&indexes, first_half.items[first_index++]);
+    }
+    while (second_index < second_half.length) {
+      array_push(&indexes, second_half.items[second_index++]);
+    }
+
+    free(first_half.items);
+    free(second_half.items);
+  }
+
+  return indexes;
+}
+
+void array_sort(Array *array) {
+  if (array->length <= 1)
+    return;
+
+  Array indexes = get_sorted_indexes(array, 0, array->length - 1);
+  Array temp = new_array();
+  for (uint32_t i = 0; i < indexes.length; i++) {
+    array_push(&temp, array->items[indexes.items[i].int_val]);
+  }
+
+  free(indexes.items);
+  free(array->items);
+  *array = temp;
+}
+
+void array_sort_by_mapping(Array *array, Array *mapped_array) {
+  if (array->length <= 1)
+    return;
+
+  Array indexes = get_sorted_indexes(mapped_array, 0, array->length - 1);
+  Array temp = new_array();
+  for (uint32_t i = 0; i < indexes.length; i++) {
+    array_push(&temp, array->items[indexes.items[i].int_val]);
+  }
+
+  free(indexes.items);
+  free(array->items);
+  *array = temp;
+}
+
+void string_sort_by_mapping(String *str, Array *mapped_str) {
+  if (str->length <= 1)
+    return;
+
+  Array indexes = get_sorted_indexes(mapped_str, 0, str->length - 1);
+  String sorted_str = new_string();
+  for (uint32_t i = 0; i < indexes.length; i++) {
+    string_add_char(&sorted_str, str->str_data[indexes.items[i].int_val]);
+  }
+
+  free(indexes.items);
+  free(str->str_data);
+  *str = sorted_str;
+}
+
 // Replaces array with the intersection of array and to_and
 void array_and(Array *array, Array *to_and) {
   Set can_add = new_set();

@@ -258,6 +258,53 @@ void builtin_do() {
   free_item(&block);
 }
 
+void builtin_dollar_sign() {
+  Item item = stack_pop();
+
+  if (item.type == TYPE_INTEGER) {
+    if (item.int_val < stack.length) {
+      stack_push(make_copy(&stack.items[stack.length - item.int_val - 1]));
+    }
+  }
+  else if (item.type == TYPE_STRING) {
+    string_sort(&item.str_val);
+    stack_push(item);
+  }
+  else if (item.type == TYPE_ARRAY) {
+    array_sort(&item.arr_val);
+    stack_push(item);
+  }
+  else if (item.type == TYPE_BLOCK) {
+    Item to_sort = stack_pop();
+    if (to_sort.type == TYPE_INTEGER) {
+      fprintf(stderr, "Error! Cannot sort an integer!\n");
+      exit(1);
+    }
+    else if (to_sort.type == TYPE_BLOCK || to_sort.type == TYPE_STRING) {
+      Item mapped_array = make_array();
+      for (uint32_t i = 0; i < to_sort.str_val.length; i++) {
+        stack_push(make_integer((unsigned char) to_sort.str_val.str_data[i]));
+        execute_string(&item.str_val);
+        array_push(&mapped_array.arr_val, stack_pop());
+      }
+      string_sort_by_mapping(&to_sort.str_val, &mapped_array.arr_val);
+      stack_push(to_sort);
+      free_item(&mapped_array);
+    }
+    else if (to_sort.type == TYPE_ARRAY) {
+      Item mapped_array = make_array();
+      for (uint32_t i = 0; i < to_sort.arr_val.length; i++) {
+        stack_push(make_copy(&to_sort.arr_val.items[i]));
+        execute_string(&item.str_val);
+        array_push(&mapped_array.arr_val, stack_pop());
+      }
+      array_sort_by_mapping(&to_sort.arr_val, &mapped_array.arr_val);
+      stack_push(to_sort);
+      free_item(&mapped_array);
+    }
+  }
+}
+
 void builtin_equal() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();

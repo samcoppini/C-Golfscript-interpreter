@@ -185,6 +185,20 @@ void string_remove_from_front(String *str, int64_t to_remove) {
   }
 }
 
+void string_sort(String *str) {
+  uint32_t counts[256] = {0};
+  for (uint32_t i = 0; i < str->length; i++) {
+    counts[(unsigned char) str->str_data[i]]++;
+  }
+  uint32_t cur_index = 0;
+  for (uint32_t i = 0; i < 256; i++) {
+    while (counts[i] > 0) {
+      str->str_data[cur_index++] = (char) i;
+      counts[i]--;
+    }
+  }
+}
+
 void string_multiply(String *str, int64_t factor) {
   if (factor < 0) {
     fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");

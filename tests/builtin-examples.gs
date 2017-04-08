@@ -28,12 +28,11 @@ nl
 1 2 3 4 @ ][1 3 4 2] = print
 nl
 
-# Unimplemented as of right now
-# "Tests for $" puts
-# 1 2 3 4 5 1$ ] [1 2 3 4 5 4] = print
-# 'asdf'$ "adfs" = print
-# [5 4 3 1 2]{-1*}$ [5 4 3 2 1] = print
-# nl
+"Tests for $" puts
+1 2 3 4 5 1$ ] [1 2 3 4 5 4] = print
+'asdf'$ "adfs" = print
+[5 4 3 1 2]{-1*}$ [5 4 3 2 1] = print
+nl
 
 "Tests for +" puts
 5 7 + 12 = print
