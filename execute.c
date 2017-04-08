@@ -180,7 +180,7 @@ String next_token(String *str, uint32_t *code_pos) {
   else if (c == '-') {
     string_add_char(&token, c);
     c = str->str_data[++(*code_pos)];
-    while (isdigit(c)) {
+    while (isdigit(c) && *code_pos < str->length) {
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
     }
@@ -189,13 +189,13 @@ String next_token(String *str, uint32_t *code_pos) {
     do {
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
-    } while (isdigit(c));
+    } while (isdigit(c) && *code_pos < str->length);
   }
   else if (isalpha(c) || c == '_') {
     do {
       string_add_char(&token, c);
       c = str->str_data[++(*code_pos)];
-    } while (isalnum(c) || c == '_');
+    } while ((isalnum(c) || c == '_') && *code_pos < str->length);
   }
   else if (c == '{') {
     int brace_level = 1;
