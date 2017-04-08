@@ -303,6 +303,47 @@ void builtin_exclamation() {
   free_item(&item);
 }
 
+void builtin_greater_than() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type < item2.type) {
+    swap_items(&item1, &item2);
+  }
+
+  if (item2.type == TYPE_INTEGER) {
+    if (item1.type == TYPE_INTEGER) {
+      stack_push(make_integer(item2.int_val > item1.int_val));
+    }
+    else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
+      if (item2.int_val < 0) {
+        item2.int_val = item1.str_val.length + item2.int_val;
+      }
+      string_remove_from_front(&item1.str_val, item2.int_val);
+      stack_push(item1);
+    }
+    else if (item1.type == TYPE_ARRAY) {
+      if (item2.int_val < 0) {
+        item2.int_val = item1.arr_val.length + item2.int_val;
+      }
+      uint32_t i;
+      for (i = 0; i < item1.arr_val.length - item2.int_val; i++) {
+        free_item(&item1.arr_val.items[i]);
+        item1.arr_val.items[i] = item1.arr_val.items[i + item2.int_val];
+      }
+      while (i < item1.arr_val.length) {
+        free_item(&item1.arr_val.items[i++]);
+      }
+      item1.arr_val.length = max(0, item1.arr_val.length - item2.int_val);
+      stack_push(item1);
+    }
+  }
+  else {
+    coerce_types(&item1, &item2);
+    stack_push(make_integer(item_compare(&item1, &item2) < 0));
+  }
+}
+
 void builtin_if() {
   Item false_item = stack_pop();
   Item true_item = stack_pop();
@@ -512,7 +553,7 @@ void builtin_percent() {
             items_add(&mapped_str, &new_item);
             if (mapped_str.type == TYPE_BLOCK) {
               if (i == 0) {
-                string_remove_front(&mapped_str.str_val);
+                string_remove_from_front(&mapped_str.str_val, 1);
               }
               mapped_str.type = TYPE_STRING;
             }

@@ -114,13 +114,13 @@ nl
 {asdf} -1 < {asd} = print
 nl
 
-# Unimplemented as of right now
-# "Tests for >" puts
-# 3 4 > 0 = print
-# "asdf" "asdg" > 0 = print
-# [1 2 3] 2 > [3] = print
-# {asdf} -1 > {f} = print
-# nl
+Unimplemented as of right now
+"Tests for >" puts
+3 4 > 0 = print
+"asdf" "asdg" > 0 = print
+[1 2 3] 2 > [3] = print
+{asdf} -1 > {f} = print
+nl
 
 "Tests for =" puts
 3 4 = 0 = print

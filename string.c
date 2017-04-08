@@ -171,13 +171,17 @@ Item string_split_into_groups(String *str, int64_t group_size) {
   return array;
 }
 
-void string_remove_front(String *str) {
-  if (str->length == 0)
+void string_remove_from_front(String *str, int64_t to_remove) {
+  if (str->length - to_remove <= 0) {
+    str->length = 0;
     return;
+  }
+  else {
+    str->length -= to_remove;
+  }
 
-  str->length--;
   for (uint32_t i = 0; i < str->length; i++) {
-    str->str_data[i] = str->str_data[i + 1];
+    str->str_data[i] = str->str_data[i + to_remove];
   }
 }
 

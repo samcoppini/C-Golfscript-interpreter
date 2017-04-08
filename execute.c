@@ -43,6 +43,7 @@ void init_interpreter() {
   map_set(&definitions, create_string(","), make_builtin(builtin_comma));
   map_set(&definitions, create_string("="), make_builtin(builtin_equal));
   map_set(&definitions, create_string("!"), make_builtin(builtin_exclamation));
+  map_set(&definitions, create_string(">"), make_builtin(builtin_greater_than));
   map_set(&definitions, create_string("["), make_builtin(builtin_lbracket));
   map_set(&definitions, create_string("<"), make_builtin(builtin_less_than));
   map_set(&definitions, create_string("("), make_builtin(builtin_lparen));
@@ -257,11 +258,11 @@ void execute_string(String *str) {
       stack_push(make_integer(string_to_int(&tok)));
     }
     else if (tok.str_data[0] == '"' || tok.str_data[0] == '\'') {
-      string_remove_front(&tok);
+      string_remove_from_front(&tok, 1);
       stack_push(make_string(&tok));
     }
     else if (tok.str_data[0] == '{') {
-      string_remove_front(&tok);
+      string_remove_from_front(&tok, 1);
       stack_push(make_block(tok));
     }
     free(tok.str_data);
