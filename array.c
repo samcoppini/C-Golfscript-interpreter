@@ -50,7 +50,7 @@ void array_multiply(Array *array, int64_t factor) {
     array->items = realloc(array->items, sizeof(Item) * array->allocated);
   }
   uint32_t cur_len = array->length;
-  while (factor-- > 0) {
+  while (--factor > 0) {
     for (uint32_t i = 0; i < array->length; i++) {
       array->items[i + cur_len] = make_copy(&array->items[i]);
     }
