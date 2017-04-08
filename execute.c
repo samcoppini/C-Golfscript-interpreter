@@ -75,6 +75,15 @@ void init_interpreter() {
   map_set(&definitions, create_string("p"),
           make_block(create_string("`puts")));
 
+  map_set(&definitions, create_string("and"),
+          make_block(create_string("1$if")));
+
+  map_set(&definitions, create_string("or"),
+          make_block(create_string("1$\\if")));
+
+  map_set(&definitions, create_string("xor"),
+          make_block(create_string("\\!!{!}*")));
+
   // Initializes random number generator for the rand function
   srand(time(NULL));
 }

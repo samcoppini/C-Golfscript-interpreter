@@ -153,6 +153,19 @@ nl
 [1 2 3] ) ] [[1 2] 3] = print
 nl
 
+"Tests for or" puts
+5 {1 0/} or 5 = print
+nl
+
+"Tests for and" puts
+5 {1 1 +} and 2 = print
+nl
+
+"Tests for xor" puts
+0 [3] xor [3] = print
+2 [3] xor 0 = print
+nl
+
 "Tests for do" puts
 5{1-..}do ] [4 3 2 1 0 0] = print
 nl
