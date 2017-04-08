@@ -211,11 +211,11 @@ void string_multiply(String *str, int64_t factor) {
 void string_subtract(String *str, String *to_subtract) {
   bool subtracted_chars[256] = {0};
   for (uint32_t i = 0; i < to_subtract->length; i++) {
-    subtracted_chars[(unsigned) to_subtract->str_data[i]] = true;
+    subtracted_chars[(unsigned char) to_subtract->str_data[i]] = true;
   }
   uint32_t chars_removed = 0;
   for (uint32_t i = 0; i < str->length; i++) {
-    if (subtracted_chars[(unsigned) str->str_data[i]]) {
+    if (subtracted_chars[(unsigned char) str->str_data[i]]) {
       chars_removed++;
     }
     else {
@@ -230,12 +230,12 @@ void string_subtract(String *str, String *to_subtract) {
 void string_setwise_and(String *str, String *to_and) {
   bool present_chars[256] = {0};
   for (uint32_t i = 0; i < to_and->length; i++) {
-    present_chars[(unsigned) to_and->str_data[i]] = true;
+    present_chars[(unsigned char) to_and->str_data[i]] = true;
   }
   uint32_t chars_removed = 0;
   for (uint32_t i = 0; i < str->length; i++) {
-    if (present_chars[(unsigned) str->str_data[i]]) {
-      present_chars[(unsigned) str->str_data[i]] = false;
+    if (present_chars[(unsigned char) str->str_data[i]]) {
+      present_chars[(unsigned char) str->str_data[i]] = false;
       str->str_data[i - chars_removed] = str->str_data[i];
     }
     else {
@@ -250,18 +250,18 @@ void string_setwise_or(String *str, String *to_or) {
   bool present_chars[256] = {0};
   uint32_t chars_removed = 0;
   for (uint32_t i = 0; i < str->length; i++) {
-    if (present_chars[(unsigned) str->str_data[i]]) {
+    if (present_chars[(unsigned char) str->str_data[i]]) {
       chars_removed++;
     }
     else {
-      present_chars[(unsigned) str->str_data[i]] = true;
+      present_chars[(unsigned char) str->str_data[i]] = true;
       str->str_data[i - chars_removed] = str->str_data[i];
     }
   }
   str->length -= chars_removed;
   for (uint32_t i = 0; i < to_or->length; i++) {
-    if (!present_chars[(unsigned) to_or->str_data[i]]) {
-      present_chars[(unsigned) to_or->str_data[i]] = true;
+    if (!present_chars[(unsigned char) to_or->str_data[i]]) {
+      present_chars[(unsigned char) to_or->str_data[i]] = true;
       string_add_char(str, to_or->str_data[i]);
     }
   }
@@ -272,28 +272,28 @@ void string_setwise_xor(String *str, String *to_xor) {
   bool in_string1[256] = {0};
   bool in_string2[256] = {0};
   for (uint32_t i = 0; i < to_xor->length; i++) {
-    in_string2[(unsigned) to_xor->str_data[i]] = true;
+    in_string2[(unsigned char) to_xor->str_data[i]] = true;
   }
   uint32_t chars_removed = 0;
   for (uint32_t i = 0; i < str->length; i++) {
-    if (in_string2[(unsigned) str->str_data[i]]) {
-      in_string1[(unsigned) str->str_data[i]] = true;
+    if (in_string2[(unsigned char) str->str_data[i]]) {
+      in_string1[(unsigned char) str->str_data[i]] = true;
       chars_removed++;
     }
-    else if (in_string1[(unsigned) str->str_data[i]]) {
+    else if (in_string1[(unsigned char) str->str_data[i]]) {
       chars_removed++;
     }
     else {
-      in_string1[(unsigned) str->str_data[i]] = true;
+      in_string1[(unsigned char) str->str_data[i]] = true;
       str->str_data[i - chars_removed] = str->str_data[i];
     }
   }
   str->length -= chars_removed;
   for (uint32_t i = 0; i < to_xor->length; i++) {
-    if (!in_string1[(unsigned) to_xor->str_data[i]] &&
-         in_string2[(unsigned) to_xor->str_data[i]])
+    if (!in_string1[(unsigned char) to_xor->str_data[i]] &&
+         in_string2[(unsigned char) to_xor->str_data[i]])
     {
-      in_string2[(unsigned) to_xor->str_data[i]] = false;
+      in_string2[(unsigned char) to_xor->str_data[i]] = false;
       string_add_char(str, to_xor->str_data[i]);
     }
   }
