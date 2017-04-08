@@ -107,13 +107,12 @@ nl
 1 2 3 ; ][1 2] = print
 nl
 
-# Unimplemented as of right now
-# "Tests for <" puts
-# 3 4 < 1 = print
-# "asdf" "asdg" < 1 = print
-# [1 2 3] 2 < [1 2] print
-# {asdf} -1 < {asd} print
-# nl
+"Tests for <" puts
+3 4 < 1 = print
+"asdf" "asdg" < 1 = print
+[1 2 3] 2 < [1 2] = print
+{asdf} -1 < {asd} = print
+nl
 
 # Unimplemented as of right now
 # "Tests for >" puts

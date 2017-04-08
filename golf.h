@@ -94,6 +94,7 @@ void builtin_equal();
 void builtin_exclamation();
 void builtin_if();
 void builtin_lbracket();
+void builtin_less_than();
 void builtin_lparen();
 void builtin_minus();
 void builtin_percent();

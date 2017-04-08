@@ -44,6 +44,7 @@ void init_interpreter() {
   map_set(&definitions, create_string("="), make_builtin(builtin_equal));
   map_set(&definitions, create_string("!"), make_builtin(builtin_exclamation));
   map_set(&definitions, create_string("["), make_builtin(builtin_lbracket));
+  map_set(&definitions, create_string("<"), make_builtin(builtin_less_than));
   map_set(&definitions, create_string("("), make_builtin(builtin_lparen));
   map_set(&definitions, create_string("-"), make_builtin(builtin_minus));
   map_set(&definitions, create_string("%"), make_builtin(builtin_percent));
