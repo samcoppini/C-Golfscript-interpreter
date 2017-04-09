@@ -89,11 +89,7 @@ void builtin_asterisk() {
       stack_push(joined_array);
     }
     else if (item1.type == TYPE_BLOCK) {
-      if (item2.arr_val.length == 0) {
-        fprintf(stderr, "Error! Cannot map over an empty array!\n");
-        exit(1);
-      }
-      else {
+      if (item2.arr_val.length > 0) {
         stack_push(item2.arr_val.items[0]);
         for (uint32_t i = 1; i < item2.arr_val.length; i++) {
           stack_push(item2.arr_val.items[i]);
