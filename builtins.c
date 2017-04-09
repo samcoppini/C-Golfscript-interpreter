@@ -641,7 +641,7 @@ void builtin_percent() {
         stack_push(make_integer(item2.str_val.str_data[i]));
         execute_string(&item1.str_val);
         for (uint32_t j = start_stack_size; j < stack.length; j++) {
-          Item new_item = stack_pop();
+          Item new_item = stack.items[j];
           if (new_item.type == TYPE_INTEGER) {
             string_add_char(&mapped_str.str_val, new_item.int_val);
           }
@@ -654,7 +654,6 @@ void builtin_percent() {
               mapped_str.type = TYPE_STRING;
             }
           }
-          free_item(&new_item);
         }
         stack.length = min(stack.length, start_stack_size);
       }
