@@ -85,7 +85,7 @@ void init_interpreter() {
           make_block(create_string("\\!!{!}*")));
 
   // Initializes random number generator for the rand function
-  srand(time(NULL));
+  init_rng();
 }
 
 // Pushes an item to the stack

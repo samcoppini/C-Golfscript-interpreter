@@ -737,7 +737,7 @@ void builtin_rand() {
     exit(1);
   }
   else {
-    item.int_val = rand() % item.int_val;
+    item.int_val = get_randint(item.int_val);
     stack_push(item);
   }
 }

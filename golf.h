@@ -149,6 +149,10 @@ bool map_has(Map *map, String *key);
 void map_set(Map *map, String key, Item item);
 Item *map_get(Map *map, String *key);
 
+// random.c
+void init_rng();
+int64_t get_randint(int64_t max_val);
+
 // set.c
 Set new_set();
 void free_set(Set *set);
