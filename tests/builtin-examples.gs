@@ -184,11 +184,10 @@ nl
 -2 abs 2 = print
 nl
 
-# Unimplemented as of right now
-# "Tests for zip" puts
-# [[1 2 3][4 5 6][7 8 9]]zip [[1 4 7][2 5 8][3 6 9]] = print
-# ['asdf''1234']zip ["a1" "s1" "d3" "f4"] = print
-# nl
+"Tests for zip" puts
+[[1 2 3][4 5 6][7 8 9]]zip [[1 4 7][2 5 8][3 6 9]] = print
+['asdf''1234']zip ["a1" "s2" "d3" "f4"] = print
+nl
 
 Unimplemented as of right now
 "Tests for base" puts

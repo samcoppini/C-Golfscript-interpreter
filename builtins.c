@@ -992,3 +992,69 @@ void builtin_while() {
   free_item(&cond);
   free_item(&body);
 }
+
+void builtin_zip() {
+  Item item = stack_pop();
+  if (item.type != TYPE_ARRAY) {
+    fprintf(stderr, "Error! Cannot zip over non-array!\n");
+    exit(1);
+  }
+  Item zipped_array = make_array();
+  for (uint32_t i = 0; i < item.arr_val.length; i++) {
+    Item cur_item = item.arr_val.items[i];
+    if (cur_item.type == TYPE_INTEGER) {
+      fprintf(stderr, "Error! Cannot zip over array with an integer!\n");
+      exit(1);
+    }
+    else if (cur_item.type == TYPE_ARRAY) {
+      for (uint32_t j = 0; j < cur_item.arr_val.length; j++) {
+        if (j >= zipped_array.arr_val.length) {
+          if (item.arr_val.items[0].type == TYPE_ARRAY)
+            array_push(&zipped_array.arr_val, make_array());
+          else if (item.arr_val.items[0].type == TYPE_STRING)
+            array_push(&zipped_array.arr_val, empty_string());
+          else if (item.arr_val.items[0].type == TYPE_BLOCK)
+            array_push(&zipped_array.arr_val, make_block(new_string()));
+        }
+        if (zipped_array.arr_val.items[j].type == TYPE_STRING ||
+            zipped_array.arr_val.items[j].type == TYPE_BLOCK)
+        {
+          if (cur_item.arr_val.items[j].type != TYPE_INTEGER) {
+            fprintf(stderr, "Invalid array for zip!\n");
+            exit(1);
+          }
+          string_add_char(&zipped_array.arr_val.items[j].str_val,
+                          cur_item.arr_val.items[j].int_val);
+        }
+        else if (zipped_array.arr_val.items[j].type == TYPE_ARRAY) {
+          array_push(&zipped_array.arr_val.items[j].arr_val,
+                     cur_item.arr_val.items[j]);
+        }
+      }
+    }
+    else if (cur_item.type == TYPE_STRING || cur_item.type == TYPE_BLOCK) {
+      for (uint32_t j = 0; j < cur_item.str_val.length; j++) {
+        if (j >= zipped_array.arr_val.length) {
+          if (item.arr_val.items[0].type == TYPE_ARRAY)
+            array_push(&zipped_array.arr_val, make_array());
+          else if (item.arr_val.items[0].type == TYPE_STRING)
+            array_push(&zipped_array.arr_val, empty_string());
+          else if (item.arr_val.items[0].type == TYPE_BLOCK)
+            array_push(&zipped_array.arr_val, make_block(new_string()));
+        }
+        if (zipped_array.arr_val.items[j].type == TYPE_STRING ||
+            zipped_array.arr_val.items[j].type == TYPE_BLOCK)
+        {
+          string_add_char(&zipped_array.arr_val.items[j].str_val,
+                          cur_item.str_val.str_data[j]);
+        }
+        else if (zipped_array.arr_val.items[j].type == TYPE_ARRAY) {
+          array_push(&zipped_array.arr_val.items[j].arr_val,
+                     make_integer(cur_item.str_val.str_data[j]));
+        }
+      }
+    }
+  }
+  stack_push(zipped_array);
+  free(item.arr_val.items);
+}

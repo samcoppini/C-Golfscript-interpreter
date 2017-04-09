@@ -117,6 +117,7 @@ void builtin_slash();
 void builtin_until();
 void builtin_tilde();
 void builtin_while();
+void builtin_zip();
 
 // item.c
 Item make_integer(int64_t int_val);

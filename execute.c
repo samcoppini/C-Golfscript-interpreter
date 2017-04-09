@@ -66,6 +66,7 @@ void init_interpreter() {
   map_set(&definitions, create_string("rand"), make_builtin(builtin_rand));
   map_set(&definitions, create_string("until"), make_builtin(builtin_until));
   map_set(&definitions, create_string("while"), make_builtin(builtin_while));
+  map_set(&definitions, create_string("zip"), make_builtin(builtin_zip));
 
   map_set(&definitions, create_string("n"),
           make_block(create_string("\"\n\"")));
