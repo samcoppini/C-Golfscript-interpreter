@@ -39,8 +39,7 @@ void array_reverse(Array *array) {
 
 void array_multiply(Array *array, int64_t factor) {
   if (factor < 0) {
-    fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
-    exit(1);
+    error("Cannot multiply array by a negative argument!");
   }
   uint32_t new_len = array->length * factor;
   if (new_len > array->allocated) {
@@ -121,8 +120,7 @@ Item array_split_into_groups(Array *array, int64_t group_len) {
     group_len *= -1;
   }
   else if (group_len == 0) {
-    fprintf(stderr, "Error! Cannot split into groups of size 0!\n");
-    exit(1);
+    error("Cannot split into groups of size 0!");
   }
   for (uint32_t i = 0; i < array->length; i++) {
     array_push(&cur_array.arr_val, array->items[i]);
@@ -142,8 +140,7 @@ Item array_split_into_groups(Array *array, int64_t group_len) {
 
 void array_step_over(Array *array, int64_t step_size) {
   if (step_size == 0) {
-    fprintf(stderr, "Error! Cannot select elements with 0 step size!\n");
-    exit(1);
+    error("Cannot select elements with 0 step size!");
   }
   else if (step_size < 0) {
     array_reverse(array);

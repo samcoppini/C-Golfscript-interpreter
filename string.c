@@ -110,8 +110,7 @@ int64_t string_find_str(String *str, String *to_find) {
 
 void string_step_over(String *str, int64_t step_size) {
   if (step_size == 0) {
-    fprintf(stderr, "Error! Step size of string select must be nonzero!\n");
-    exit(1);
+    error("Step size of string select must be nonzero!");
   }
   else if (step_size < 0) {
     string_reverse(str);
@@ -152,8 +151,7 @@ Item string_split_into_groups(String *str, int64_t group_size) {
     group_size *= -1;
   }
   else if (group_size == 0) {
-    fprintf(stderr, "Error! Cannot split string into groups of size 0!\n");
-    exit(1);
+    error("Cannot split string into groups of size 0!");
   }
 
   for (uint32_t i = 0; i < str->length; i++) {
@@ -201,8 +199,7 @@ void string_sort(String *str) {
 
 void string_multiply(String *str, int64_t factor) {
   if (factor < 0) {
-    fprintf(stderr, "Error! Cannot multiply array by a negative argument!\n");
-    exit(1);
+    error("Cannot multiply array by a negative argument!");
   }
   uint32_t new_len = str->length * factor;
   if (new_len > str->allocated) {

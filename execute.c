@@ -97,8 +97,7 @@ void stack_push(Item item) {
 
 Item stack_pop() {
   if (stack.length == 0) {
-    fprintf(stderr, "Error! Cannot pop from empty stack!\n");
-    exit(1);
+    error("Cannot pop from empty stack!");
   }
   stack.length--;
 
@@ -148,8 +147,7 @@ String next_token(String *str, uint32_t *code_pos) {
           case 'x':
             c = hex_digit_val(str->str_data[++(*code_pos)]);
             if (c < 0) {
-              fprintf(stderr, "Invalid hex escape sequence!\n");
-              exit(1);
+              error("Invalid hex escape sequence!");
             }
             if (*code_pos < str->length &&
                 hex_digit_val(str->str_data[*code_pos + 1]) >= 0)
@@ -167,8 +165,7 @@ String next_token(String *str, uint32_t *code_pos) {
     *code_pos += 1;
 
     if (*code_pos > str->length) {
-      fprintf(stderr, "Error! Unmatched \" encountered in the code!\n");
-      exit(1);
+      error("Unmatched \" encountered in the code!");
     }
   }
   else if (c == '\'') {
@@ -187,8 +184,7 @@ String next_token(String *str, uint32_t *code_pos) {
     *code_pos += 1;
 
     if (*code_pos > str->length) {
-      fprintf(stderr, "Error! Unmatched ' encountered in the code!\n");
-      exit(1);
+      error("Unmatched ' encountered in the code!");
     }
   }
   else if (c == '-') {
@@ -225,8 +221,7 @@ String next_token(String *str, uint32_t *code_pos) {
     *code_pos += 1;
 
     if (*code_pos > str->length) {
-      fprintf(stderr, "Error! Unmatched { encountered in the code!\n");
-      exit(1);
+      error("Unmatched { encountered in the code!");
     }
   }
   else if (c == '#') {
@@ -253,12 +248,10 @@ void execute_string(String *str) {
     }
     else if (tok.str_data[0] == ':') {
       if (stack.length == 0) {
-        fprintf(stderr, "Unable to define from empty stack!\n");
-        exit(1);
+        error("Unable to define from empty stack!");
       }
       if (code_pos >= str->length) {
-        fprintf(stderr, "Error! No token to assign to!\n");
-        exit(1);
+        error("No token to assign to!");
       }
       Item top_item = make_copy(&stack.items[stack.length - 1]);
       String to_define = next_token(str, &code_pos);

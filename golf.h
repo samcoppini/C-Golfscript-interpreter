@@ -119,6 +119,9 @@ void builtin_tilde();
 void builtin_while();
 void builtin_zip();
 
+// error.c
+void error(const char *msg, ...);
+
 // item.c
 Item make_integer(int64_t int_val);
 Item make_string(String *str_val);

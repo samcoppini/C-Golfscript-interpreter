@@ -15,8 +15,7 @@ void builtin_abs() {
     stack_push(item);
   }
   else {
-    fprintf(stderr, "Error! Invalid type for abs function!\n");
-    exit(1);
+    error("Invalid type for abs function!");
   }
 }
 
@@ -117,14 +116,12 @@ void builtin_asterisk() {
       if (item2.type == TYPE_BLOCK) {
         swap_items(&item1, &item2);
       }
-      if (item2.str_val.length == 0) {
-        fprintf(stderr, "Error! Cannot map over an empty string!\n");
-        exit(1);
-      }
-      stack_push(make_integer(item2.str_val.str_data[0]));
-      for (uint32_t i = 1; i < item2.str_val.length; i++) {
-        stack_push(make_integer(item2.str_val.str_data[i]));
-        execute_string(&item1.str_val);
+      if (item2.str_val.length > 0) {
+        stack_push(make_integer(item2.str_val.str_data[0]));
+        for (uint32_t i = 1; i < item2.str_val.length; i++) {
+          stack_push(make_integer(item2.str_val.str_data[i]));
+          execute_string(&item1.str_val);
+        }
       }
       free(item2.str_val.str_data);
       free(item1.str_val.str_data);
@@ -203,8 +200,7 @@ void builtin_base() {
       int64_t result = 0;
       for (int32_t i = item2.arr_val.length - 1; i >= 0; i--) {
         if (item2.arr_val.items[i].type != TYPE_INTEGER) {
-          fprintf(stderr, "Error! Cannot perform base operation on array with non-integers!\n");
-          exit(1);
+          error("Cannot perform base operation on array with non-integers!");
         }
         result += item2.arr_val.items[i].int_val * base_val;
         base_val *= item1.int_val;
@@ -222,8 +218,7 @@ void builtin_base() {
     }
   }
   else {
-    fprintf(stderr, "Error! Invalid arguments for base operation!\n");
-    exit(1);
+    error("Invalid arguments for base operation!");
   }
 }
 
@@ -265,8 +260,7 @@ void builtin_comma() {
   else if (item.type == TYPE_BLOCK) {
     Item to_map = stack_pop();
     if (to_map.type != TYPE_ARRAY) {
-      fprintf(stderr, "Error! Operand for , must be array!\n");
-      exit(1);
+      error("Operand for , must be array!");
     }
     uint32_t items_removed = 0;
     for (uint32_t i = 0; i < to_map.arr_val.length; i++) {
@@ -322,8 +316,7 @@ void builtin_dollar_sign() {
   else if (item.type == TYPE_BLOCK) {
     Item to_sort = stack_pop();
     if (to_sort.type == TYPE_INTEGER) {
-      fprintf(stderr, "Error! Cannot sort an integer!\n");
-      exit(1);
+      error("Cannot sort an integer!");
     }
     else if (to_sort.type == TYPE_BLOCK || to_sort.type == TYPE_STRING) {
       Item mapped_array = make_array();
@@ -528,9 +521,8 @@ void builtin_lparen() {
   }
   else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
     if (item.str_val.length == 0) {
-      fprintf(stderr, "Error! Unable to uncons from empty %s!",
-              item.type == TYPE_STRING ? "string": "block");
-      exit(1);
+      error("Unable to uncons from empty %s!",
+            item.type == TYPE_STRING ? "string": "block");
     }
     Item new_item = make_integer(item.str_val.str_data[0]);
     for (uint32_t i = 0; i < item.str_val.length; i++) {
@@ -542,8 +534,7 @@ void builtin_lparen() {
   }
   else if (item.type == TYPE_ARRAY) {
     if (item.arr_val.length == 0) {
-      fprintf(stderr, "Error! Unable to uncons from empty array");
-      exit(1);
+      error("Unable to uncons from empty array");
     }
     Item new_item = item.arr_val.items[0];
     for (uint32_t i = 0; i < item.arr_val.length; i++) {
@@ -659,8 +650,7 @@ void builtin_percent() {
     }
   }
   else if (item1.type == TYPE_BLOCK && item2.type == TYPE_BLOCK) {
-    fprintf(stderr, "Error! %% operation undefined for two blocks!\n");
-    exit(1);
+    error("%% operation undefined for two blocks!");
   }
 }
 
@@ -694,8 +684,7 @@ void builtin_question() {
 
   if (item1.type == TYPE_INTEGER) {
     if (item1.int_val < 0) {
-      fprintf(stderr, "Error! Can't raise an integer to a negative power!\n");
-      exit(1);
+      error("Can't raise an integer to a negative power!");
     }
     int64_t base = item2.int_val;
     item2.int_val = 1;
@@ -735,8 +724,7 @@ void builtin_question() {
   }
   else if (item1.type == TYPE_BLOCK) {
     if (item2.type == TYPE_INTEGER) {
-      fprintf(stderr, "Error! Can't perform find operation on an integer.\n");
-      exit(1);
+      error("Can't perform find operation on an integer.");
     }
     else if (item2.type == TYPE_BLOCK || item2.type == TYPE_STRING) {
       if (item2.type == TYPE_BLOCK) {
@@ -777,8 +765,7 @@ void builtin_question() {
 void builtin_rand() {
   Item item = stack_pop();
   if (item.type != TYPE_INTEGER) {
-    fprintf(stderr, "Error! rand requires an integer!\n");
-    exit(1);
+    error("rand requires an integer!");
   }
   else {
     item.int_val = get_randint(item.int_val);
@@ -812,9 +799,8 @@ void builtin_rparen() {
   }
   else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
     if (item.str_val.length == 0) {
-      fprintf(stderr, "Error! Unable to uncons from empty %s!",
-              item.type == TYPE_STRING ? "string": "block");
-      exit(1);
+      error("Unable to uncons from empty %s!",
+            item.type == TYPE_STRING ? "string": "block");
     }
     String *str = &item.str_val;
     Item new_item = make_integer(str->str_data[str->length - 1]);
@@ -826,8 +812,7 @@ void builtin_rparen() {
   }
   else if (item.type == TYPE_ARRAY) {
     if (item.arr_val.length == 0) {
-      fprintf(stderr, "Error! Unable to uncons from empty array");
-      exit(1);
+      error("Unable to uncons from empty array");
     }
     Item new_item = item.arr_val.items[item.arr_val.length - 1];
     item.arr_val.length -= 1;
@@ -928,8 +913,7 @@ void builtin_slash() {
       free_item(&item2);
     }
     else if (item2.type == TYPE_INTEGER) {
-      fprintf(stderr, "Error! Builtin / function undefined for block and int.\n");
-      exit(1);
+      error("Builtin / function undefined for block and int.");
     }
   }
 }
@@ -991,15 +975,13 @@ void builtin_while() {
 void builtin_zip() {
   Item item = stack_pop();
   if (item.type != TYPE_ARRAY) {
-    fprintf(stderr, "Error! Cannot zip over non-array!\n");
-    exit(1);
+    error("Cannot zip over non-array!");
   }
   Item zipped_array = make_array();
   for (uint32_t i = 0; i < item.arr_val.length; i++) {
     Item cur_item = item.arr_val.items[i];
     if (cur_item.type == TYPE_INTEGER) {
-      fprintf(stderr, "Error! Cannot zip over array with an integer!\n");
-      exit(1);
+      error("Cannot zip over array with an integer!");
     }
     else if (cur_item.type == TYPE_ARRAY) {
       for (uint32_t j = 0; j < cur_item.arr_val.length; j++) {
@@ -1015,8 +997,7 @@ void builtin_zip() {
             zipped_array.arr_val.items[j].type == TYPE_BLOCK)
         {
           if (cur_item.arr_val.items[j].type != TYPE_INTEGER) {
-            fprintf(stderr, "Invalid array for zip!\n");
-            exit(1);
+            error("Invalid array for zip!");
           }
           string_add_char(&zipped_array.arr_val.items[j].str_val,
                           cur_item.arr_val.items[j].int_val);
