@@ -190,8 +190,8 @@ nl
 # ['asdf''1234']zip ["a1" "s1" "d3" "f4"] = print
 # nl
 
-# Unimplemented as of right now
-# "Tests for base" puts
-# [1 1 0] 2 base 6 = print
-# 6 2 base [1 1 0] = print
-# nl
+Unimplemented as of right now
+"Tests for base" puts
+[1 1 0] 2 base 6 = print
+6 2 base [1 1 0] = print
+nl

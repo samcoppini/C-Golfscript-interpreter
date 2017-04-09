@@ -182,6 +182,55 @@ void builtin_bar() {
   stack_push(item2);
 }
 
+void builtin_base() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  if (item1.type == TYPE_INTEGER) {
+    if (item2.type == TYPE_INTEGER) {
+      Item digits = make_array();
+      if (item2.int_val == 0) {
+        array_push(&digits.arr_val, make_integer(0));
+      }
+      else if (item2.int_val < 0) {
+        item2.int_val *= -1;
+      }
+      while (item2.int_val > 0) {
+        array_push(&digits.arr_val, make_integer(item2.int_val % item1.int_val));
+        item2.int_val /= item1.int_val;
+      }
+      array_reverse(&digits.arr_val);
+      stack_push(digits);
+    }
+    else if (item2.type == TYPE_ARRAY) {
+      int64_t base_val = 1;
+      int64_t result = 0;
+      for (int32_t i = item2.arr_val.length - 1; i >= 0; i--) {
+        if (item2.arr_val.items[i].type != TYPE_INTEGER) {
+          fprintf(stderr, "Error! Cannot perform base operation on array with non-integers!\n");
+          exit(1);
+        }
+        result += item2.arr_val.items[i].int_val * base_val;
+        base_val *= item1.int_val;
+      }
+      stack_push(make_integer(result));
+    }
+    else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
+      int64_t base_val = 1;
+      int64_t result = 0;
+      for (int32_t i = item2.str_val.length - 1; i >= 0; i--) {
+        result += item2.str_val.str_data[i] * base_val;
+        base_val *= item1.int_val;
+      }
+      stack_push(make_integer(result));
+    }
+  }
+  else {
+    fprintf(stderr, "Error! Invalid arguments for base operation!\n");
+    exit(1);
+  }
+}
+
 void builtin_caret() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();

@@ -70,6 +70,7 @@ typedef struct Set {
 Array new_array();
 void array_push(Array *arr, Item item);
 int64_t array_find(Array *arr, Item *item);
+void array_reverse(Array *array);
 void array_multiply(Array *array, int64_t factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_split(Array *array, Array *sep);
@@ -90,6 +91,7 @@ void builtin_at();
 void builtin_backslash();
 void builtin_backtick();
 void builtin_bar();
+void builtin_base();
 void builtin_caret();
 void builtin_comma();
 void builtin_do();
