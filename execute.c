@@ -151,7 +151,7 @@ String next_token(String *str, uint32_t *code_pos) {
               exit(1);
             }
             if (*code_pos < str->length &&
-                hex_digit_val(str->str_data[*code_pos + 1] >= 0))
+                hex_digit_val(str->str_data[*code_pos + 1]) >= 0)
             {
               c <<= 4;
               c += hex_digit_val(str->str_data[++(*code_pos)]);
