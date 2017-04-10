@@ -12,6 +12,10 @@ String new_string() {
   return str;
 }
 
+void free_string(String *str) {
+  free(str->str_data);
+}
+
 String copy_string(String *str) {
   String new_str = {malloc(str->allocated), str->length, str->allocated};
   memcpy(new_str.str_data, str->str_data, str->length);

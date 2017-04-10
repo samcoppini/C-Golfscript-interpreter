@@ -144,14 +144,15 @@ void coerce_types(Item *item1, Item *item2);
 
 // execute.c
 void init_interpreter();
+void end_interpreter();
 void stack_push(Item item);
 Item stack_pop();
 void execute_string(String *str);
 void execute_item(Item *item);
-void output_final_stack();
 
 // map.c
 Map new_map();
+void free_map(Map *map);
 bool map_has(Map *map, String *key);
 void map_set(Map *map, String key, Item item);
 Item *map_get(Map *map, String *key);
@@ -169,6 +170,7 @@ void set_remove(Set *set, Item *item);
 
 // string.c
 String new_string();
+void free_string(String *str);
 String copy_string(String *str);
 String create_string(char *str);
 int string_compare(String *str1, String *str2);

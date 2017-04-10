@@ -23,7 +23,7 @@ Item empty_string() {
 }
 
 Item make_block(String str_val) {
-  Item item = {TYPE_BLOCK, .str_val = copy_string(&str_val)};
+  Item item = {TYPE_BLOCK, .str_val = str_val};
   return item;
 }
 

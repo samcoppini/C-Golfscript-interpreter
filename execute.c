@@ -90,6 +90,14 @@ void init_interpreter() {
   init_rng();
 }
 
+void end_interpreter() {
+  for (uint32_t i = 0; i < stack.length; i++) {
+    output_item(&stack.items[i]);
+    free_item(&stack.items[i]);
+  }
+  free_map(&definitions);
+}
+
 // Pushes an item to the stack
 void stack_push(Item item) {
   array_push(&stack, item);
@@ -315,11 +323,5 @@ void execute_item(Item *item) {
   }
   else {
     stack_push(make_copy(item));
-  }
-}
-
-void output_final_stack() {
-  for (uint32_t i = 0; i < stack.length; i++) {
-    output_item(&stack.items[i]);
   }
 }

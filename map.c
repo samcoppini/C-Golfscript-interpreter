@@ -34,6 +34,18 @@ Map new_map() {
   return map;
 }
 
+void free_map(Map *map) {
+  for (uint32_t i = 0; i < map->allocated; i++) {
+    if (map->keys[i] != NULL) {
+      free_string(map->keys[i]);
+      free(map->keys[i]);
+      free_item(&map->items[i]);
+    }
+  }
+  free(map->keys);
+  free(map->items);
+}
+
 // Returns whether the map has a given key
 bool map_has(Map *map, String *key) {
   uint32_t slot = get_slot(map, key);
