@@ -122,18 +122,46 @@ int hex_digit_val(char c) {
     return -1;
 }
 
-// Return the next token in the string from the given code position
-String next_token(String *str, uint32_t *code_pos) {
-  String token = new_string();
+String get_number(String *str, String *cur_tok, uint32_t *code_pos) {
+  while (++(*code_pos) < str->length && isdigit(str->str_data[*code_pos])) {
+    string_add_char(cur_tok, str->str_data[*code_pos]);
+  }
+  return *cur_tok;
+}
 
-  if (*code_pos >= str->length)
-    return token;
-
-  char c = str->str_data[*code_pos];
-  if (c == '"') {
-    do {
-      if (c == '\\') {
+String get_raw_string(String *str, String *cur_tok, uint32_t *code_pos) {
+  while (++(*code_pos) < str->length) {
+    char c = str->str_data[*code_pos];
+    if (c == '\\' && *code_pos + 1 < str->length) {
+      if (str->str_data[*code_pos + 1] == '\\' ||
+          str->str_data[*code_pos + 1] == '\'')
+      {
         c = str->str_data[++(*code_pos)];
+      }
+    }
+    else if (c == '\'') {
+      ++(*code_pos);
+      return *cur_tok;
+    }
+    string_add_char(cur_tok, c);
+  }
+
+  error("Unmatched ' encountered in the code!");
+}
+
+String get_escaped_string(String *str, String *cur_tok, uint32_t *code_pos) {
+  while (++(*code_pos) < str->length) {
+    char c = str->str_data[*code_pos];
+    if (c == '"') {
+      ++*code_pos;
+      return *cur_tok;
+    }
+    else if (c == '\\') {
+      if (++(*code_pos) >= str->length) {
+        break;
+      }
+      else {
+        c = str->str_data[*code_pos];
         switch (c) {
           case 'a': c = '\a';   break;
           case 'b': c = '\b';   break;
@@ -145,11 +173,12 @@ String next_token(String *str, uint32_t *code_pos) {
           case 't': c = '\t';   break;
           case 'v': c = '\v';   break;
           case 'x':
-            c = hex_digit_val(str->str_data[++(*code_pos)]);
-            if (c < 0) {
-              error("Invalid hex escape sequence!");
-            }
-            if (*code_pos < str->length &&
+            if (++(*code_pos) >= str->length)
+              error("Unmatched \" encountered in the code!");
+            if (hex_digit_val(str->str_data[*code_pos]) < 0)
+              error("Invalid hex literal!");
+            c = hex_digit_val(str->str_data[*code_pos]);
+            if (*code_pos + 1 < str->length &&
                 hex_digit_val(str->str_data[*code_pos + 1]) >= 0)
             {
               c <<= 4;
@@ -158,77 +187,80 @@ String next_token(String *str, uint32_t *code_pos) {
             break;
         }
       }
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    } while (c != '"' && *code_pos < str->length);
-
-    *code_pos += 1;
-
-    if (*code_pos > str->length) {
-      error("Unmatched \" encountered in the code!");
     }
+    string_add_char(cur_tok, c);
+  }
+
+  error("Unmatched \" encountered in the code!");
+}
+
+String get_identifier(String *str, String *cur_tok, uint32_t *code_pos) {
+  while (++(*code_pos) < str->length) {
+    char c = str->str_data[*code_pos];
+    if (isalnum(c) || c == '_')
+      string_add_char(cur_tok, c);
+    else
+      break;
+  }
+  return *cur_tok;
+}
+
+String get_block(String *str, String *cur_tok, uint32_t *code_pos) {
+  int brace_level = 1;
+  while (++(*code_pos) < str->length && brace_level > 0) {
+    char c = str->str_data[*code_pos];
+    if (c == '{')
+      brace_level++;
+    else if (c == '}')
+      brace_level--;
+    if (brace_level > 0)
+      string_add_char(cur_tok, str->str_data[*code_pos]);
+  }
+
+  if (*code_pos > str->length)
+    error("Unmatched { encountered in the code!");
+
+  return *cur_tok;
+}
+
+String get_comment(String *str, String *cur_tok, uint32_t *code_pos) {
+  while (++(*code_pos) < str->length && str->str_data[*code_pos] != '\n') {
+    string_add_char(cur_tok, str->str_data[*code_pos]);
+  }
+  return *cur_tok;
+}
+
+// Return the next token in the string from the given code position
+String next_token(String *str, uint32_t *code_pos) {
+  String token = new_string();
+
+  if (*code_pos >= str->length)
+    return token;
+
+  char c = str->str_data[*code_pos];
+  if (c == '"') {
+    string_add_char(&token, c);
+    return get_escaped_string(str, &token, code_pos);
   }
   else if (c == '\'') {
-    do {
-      if (c == '\\') {
-        if (str->str_data[*code_pos + 1] == '\'' ||
-            str->str_data[*code_pos + 1] == '\\')
-        {
-          c = str->str_data[++(*code_pos)];
-        }
-      }
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    } while (c != '\'' && *code_pos < str->length);
-
-    *code_pos += 1;
-
-    if (*code_pos > str->length) {
-      error("Unmatched ' encountered in the code!");
-    }
-  }
-  else if (c == '-') {
     string_add_char(&token, c);
-    c = str->str_data[++(*code_pos)];
-    while (isdigit(c) && *code_pos < str->length) {
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    }
+    return get_raw_string(str, &token, code_pos);
   }
-  else if (isdigit(c)) {
-    do {
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    } while (isdigit(c) && *code_pos < str->length);
+  else if (isdigit(c) || c == '-') {
+    string_add_char(&token, c);
+    return get_number(str, &token, code_pos);
   }
   else if (isalpha(c) || c == '_') {
-    do {
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    } while ((isalnum(c) || c == '_') && *code_pos < str->length);
+    string_add_char(&token, c);
+    return get_identifier(str, &token, code_pos);
   }
   else if (c == '{') {
-    int brace_level = 1;
-    do {
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-      if (c == '{')
-        brace_level++;
-      else if (c == '}')
-        brace_level--;
-    } while (brace_level > 0 && *code_pos < str->length);
-
-    *code_pos += 1;
-
-    if (*code_pos > str->length) {
-      error("Unmatched { encountered in the code!");
-    }
+    string_add_char(&token, c);
+    return get_block(str, &token, code_pos);
   }
   else if (c == '#') {
-    do {
-      string_add_char(&token, c);
-      c = str->str_data[++(*code_pos)];
-    } while (c != '\n' && *code_pos < str->length);
+    string_add_char(&token, c);
+    return get_comment(str, &token, code_pos);
   }
   else {
     string_add_char(&token, c);

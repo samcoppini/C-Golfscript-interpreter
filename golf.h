@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdnoreturn.h>
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -120,7 +121,7 @@ void builtin_while();
 void builtin_zip();
 
 // error.c
-void error(const char *msg, ...);
+noreturn void error(const char *msg, ...);
 
 // item.c
 Item make_integer(int64_t int_val);

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "golf.h"
 
-void error(const char *msg, ...) {
+noreturn void error(const char *msg, ...) {
   va_list ap;
 
   va_start(ap, msg);
