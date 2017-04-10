@@ -308,7 +308,7 @@ void execute_string(String *str) {
     }
     else if (tok.str_data[0] == '{') {
       string_remove_from_front(&tok, 1);
-      stack_push(make_block(tok));
+      stack_push(make_block(copy_string(&tok)));
     }
     free(tok.str_data);
   }
