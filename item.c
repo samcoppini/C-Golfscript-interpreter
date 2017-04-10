@@ -194,7 +194,7 @@ void items_add(Item *item1, Item *item2) {
   }
   else if (item1->type == TYPE_ARRAY) {
     for (uint32_t i = 0; i < item2->arr_val.length; i++) {
-      array_push(&item1->arr_val, item2->arr_val.items[i]);
+      array_push(&item1->arr_val, make_copy(&item2->arr_val.items[i]));
     }
   }
 }
