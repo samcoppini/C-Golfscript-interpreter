@@ -68,10 +68,10 @@ void array_subtract(Array *array, Array *to_subtract) {
   for (uint32_t i = 0; i < array->length; i++) {
     if (set_has(&to_remove, &array->items[i])) {
       items_removed++;
+      free_item(&array->items[i]);
     }
     else {
       if (items_removed > 0) {
-        free_item(&array->items[i - items_removed]);
         array->items[i - items_removed] = array->items[i];
       }
     }
@@ -268,12 +268,12 @@ void array_and(Array *array, Array *to_and) {
   uint32_t items_removed = 0;
   for (uint32_t i = 0; i < array->length; i++) {
     if (!set_has(&can_add, &array->items[i])) {
+      free_item(&array->items[i]);
       items_removed++;
     }
     else {
       set_remove(&can_add, &array->items[i]);
       if (items_removed > 0) {
-        free_item(&array->items[i - items_removed]);
         array->items[i - items_removed] = array->items[i];
       }
     }
@@ -290,11 +290,11 @@ void array_or(Array *array, Array *to_or) {
     if (!set_has(&already_added, &array->items[i])) {
       set_add(&already_added, &array->items[i]);
       if (items_removed > 0) {
-        free_item(&array->items[i - items_removed]);
         array->items[i - items_removed] = array->items[i];
       }
     }
     else {
+      free_item(&array->items[i]);
       items_removed++;
     }
   }
@@ -322,12 +322,12 @@ void array_xor(Array *array, Array *to_xor) {
       set_add(&first_set, &array->items[i]);
       if (!set_has(&second_set, &array->items[i])) {
         if (items_removed > 0) {
-          free_item(&array->items[i - items_removed]);
           array->items[i - items_removed] = array->items[i];
         }
         continue;
       }
     }
+    free_item(&array->items[i]);
     items_removed++;
   }
   array->length -= items_removed;
