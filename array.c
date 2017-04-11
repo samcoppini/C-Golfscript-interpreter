@@ -150,14 +150,16 @@ void array_step_over(Array *array, int64_t step_size) {
     return;
   }
 
-  for (uint32_t i = 1; i * step_size < array->length; i++) {
-    free_item(&array->items[i]);
-    array->items[i] = array->items[i * step_size];
+  for (uint32_t i = 1; i < array->length; i++) {
+    if (i % step_size) {
+      free_item(&array->items[i]);
+    }
+    else {
+      array->items[i / step_size] = array->items[i];
+    }
   }
-  for (uint32_t i = (array->length + 1) / step_size; i < array->length; i++) {
-    free_item(&array->items[i]);
-  }
-  array->length = (array->length + 1) / step_size;
+
+  array->length = ((array->length - 1) / step_size) + 1;
 }
 
 Array get_sorted_indexes(Array *array, uint32_t start, uint32_t end) {
