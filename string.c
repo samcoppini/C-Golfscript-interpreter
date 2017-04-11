@@ -133,10 +133,13 @@ Item string_split(String *str, String *sep) {
   Item arr = make_array();
   Item cur_string = empty_string();
 
-  for (uint32_t i = 0; i < str->length - sep->length + 1; i++) {
-    if (strncmp(str->str_data + i, sep->str_data, sep->length) == 0) {
+  for (uint32_t i = 0; i < str->length; i++) {
+    if (str->length - i > sep->length - 1 &&
+        strncmp(str->str_data + i, sep->str_data, sep->length) == 0)
+    {
       array_push(&arr.arr_val, cur_string);
       cur_string = empty_string();
+      i += sep->length - 1;
     }
     else {
       string_add_char(&cur_string.str_val, str->str_data[i]);
