@@ -852,6 +852,8 @@ void builtin_slash() {
 
   if (item1.type == TYPE_INTEGER) {
     if (item2.type == TYPE_INTEGER) {
+      if (item1.int_val == 0)
+        error("Attempted to divide by zero!");
       item2.int_val /= item1.int_val;
       stack_push(item2);
     }
