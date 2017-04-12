@@ -259,25 +259,42 @@ void builtin_comma() {
   }
   else if (item.type == TYPE_BLOCK) {
     Item to_map = stack_pop();
-    if (to_map.type != TYPE_ARRAY) {
-      error("Operand for , must be array!");
-    }
-    uint32_t items_removed = 0;
-    for (uint32_t i = 0; i < to_map.arr_val.length; i++) {
-      stack_push(make_copy(&to_map.arr_val.items[i]));
-      execute_string(&item.str_val);
-      Item mapped_item = stack_pop();
-      if (item_boolean(&mapped_item)) {
-        to_map.arr_val.items[i - items_removed] = to_map.arr_val.items[i];
+    if (to_map.type == TYPE_ARRAY) {
+      uint32_t items_removed = 0;
+      for (uint32_t i = 0; i < to_map.arr_val.length; i++) {
+        stack_push(make_copy(&to_map.arr_val.items[i]));
+        execute_string(&item.str_val);
+        Item mapped_item = stack_pop();
+        if (item_boolean(&mapped_item)) {
+          to_map.arr_val.items[i - items_removed] = to_map.arr_val.items[i];
+        }
+        else {
+          items_removed++;
+          free_item(&to_map.arr_val.items[i]);
+        }
+        free_item(&mapped_item);
       }
-      else {
-        items_removed++;
-        free_item(&to_map.arr_val.items[i]);
-      }
-      free_item(&mapped_item);
+      to_map.arr_val.length -= items_removed;
+      stack_push(to_map);
     }
-    to_map.arr_val.length -= items_removed;
-    stack_push(to_map);
+    else if (to_map.type == TYPE_STRING || to_map.type == TYPE_BLOCK) {
+      Item new_string = empty_string();
+      for (uint32_t i = 0; i < to_map.str_val.length; i++) {
+        stack_push(make_integer(to_map.str_val.str_data[i]));
+        execute_string(&item.str_val);
+        Item mapped_item = stack_pop();
+        if (item_boolean(&mapped_item)) {
+          string_add_char(&new_string.str_val,
+                          to_map.str_val.str_data[i]);
+        }
+        free_item(&mapped_item);
+      }
+      free_item(&to_map);
+      stack_push(new_string);
+    }
+    else if (to_map.type == TYPE_INTEGER) {
+      error("Cannot filter over an integer!");
+    }
   }
   free_item(&item);
 }
