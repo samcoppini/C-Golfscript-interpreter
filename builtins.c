@@ -318,7 +318,12 @@ void builtin_dollar_sign() {
   Item item = stack_pop();
 
   if (item.type == TYPE_INTEGER) {
-    if (item.int_val < stack.length) {
+    if (item.int_val < 0) {
+      item.int_val = -item.int_val - 1;
+      if (item.int_val < stack.length)
+        stack_push(make_copy(&stack.items[item.int_val]));
+    }
+    else if (item.int_val < stack.length) {
       stack_push(make_copy(&stack.items[stack.length - item.int_val - 1]));
     }
   }
