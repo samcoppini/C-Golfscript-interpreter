@@ -135,39 +135,48 @@ bool item_boolean(Item *item) {
   }
 }
 
+bool types_compatible(enum Type type1, enum Type type2) {
+  return (type1 == TYPE_INTEGER) == (type2 == TYPE_INTEGER);
+}
+
 int item_compare(Item *item1, Item *item2) {
-  if (item1->type != item2->type) {
-    if (item1->type < item2->type)
-      return -1;
-    else
-      return 1;
+  if (!types_compatible(item1->type, item2->type)) {
+    return item1->type - item2->type;
+  }
+  if (item1->type > item2->type) {
+    return item_compare(item2, item1) * -1;
   }
   switch (item1->type) {
     case TYPE_INTEGER:
-      if (item1->int_val < item2->int_val)
-        return -1;
-      else if (item1->int_val > item2->int_val)
-        return 1;
-      else
-        return 0;
+      return item1->int_val - item2->int_val;
+
+    case TYPE_ARRAY:
+      if (item2->type == TYPE_ARRAY) {
+        for (uint32_t i = 0; i < item1->arr_val.length; i++) {
+          if (i >= item2->arr_val.length)
+            return 1;
+          int result = item_compare(&item1->arr_val.items[i],
+                                    &item2->arr_val.items[i]);
+          if (result != 0)
+            return result;
+        }
+        return item1->arr_val.length - item2->arr_val.length;
+      }
+      else {
+        for (uint32_t i = 0; i < item1->arr_val.length; i++) {
+          if (i >= item2->str_val.length)
+            return 1;
+          if (item1->arr_val.items[i].type != TYPE_INTEGER)
+            return 1;
+          if (item1->arr_val.items[i].int_val - item2->str_val.str_data[i] != 0)
+            return item1->arr_val.items[i].int_val - item2->str_val.str_data[i];
+        }
+        return item1->arr_val.length - item2->str_val.length;
+      }
 
     case TYPE_STRING:
     case TYPE_BLOCK:
       return string_compare(&item1->str_val, &item2->str_val);
-
-    case TYPE_ARRAY:
-      for (uint32_t i = 0; i < item1->arr_val.length; i++) {
-        if (i >= item2->arr_val.length)
-          return 1;
-        int result = item_compare(&item1->arr_val.items[i],
-                                  &item2->arr_val.items[i]);
-        if (result != 0)
-          return result;
-      }
-      if (item1->arr_val.length < item2->arr_val.length)
-        return -1;
-      else
-        return 0;
 
     default:
       assert(false);
