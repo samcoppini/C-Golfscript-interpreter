@@ -397,7 +397,6 @@ void builtin_equal() {
     }
   }
   else {
-    coerce_types(&item1, &item2);
     stack_push(make_integer(items_equal(&item1, &item2)));
     free_item(&item1);
     free_item(&item2);
