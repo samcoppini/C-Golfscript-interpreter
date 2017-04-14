@@ -93,9 +93,9 @@ static TreeNode *single_rotate_right(TreeNode *cur_node) {
 }
 
 // Performs a double left rotation, such that
-//   a             b
+//   a             c
 //    \           / \
-//     b   --->  a   c
+//     b   --->  a   b
 //    /
 //   c
 // Only call this if node, node->right, and node->right->left are all non null
@@ -105,9 +105,9 @@ static TreeNode *double_rotate_left(TreeNode *cur_node) {
 }
 
 // Performs a double right rotation, such that
-//    a            b
+//    a            c
 //   /            / \
-//  b    --->    c   a
+//  b    --->    b   a
 //   \
 //    c
 // Only call this if node, node->left, and node->left->right are all non null
