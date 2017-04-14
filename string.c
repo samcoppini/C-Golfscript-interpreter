@@ -237,10 +237,13 @@ void string_multiply(String *str, int64_t factor) {
     }
   }
   uint32_t cur_len = str->length;
-  while (factor-- > 0) {
+  while (factor > 1) {
+    factor -= 1;
+
     for (uint32_t i = 0; i < str->length; i++) {
       str->str_data[i + cur_len] = str->str_data[i];
     }
+
     cur_len += str->length;
   }
   str->length = new_len;
