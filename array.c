@@ -8,6 +8,9 @@
 
 Array new_array() {
   Array arr = {malloc(ARRAY_INIT_SIZE * sizeof(Item)), 0, ARRAY_INIT_SIZE};
+  if (arr.items == NULL) {
+    error("Unable to allocate space for new array!");
+  }
   return arr;
 }
 
@@ -15,6 +18,9 @@ void array_push(Array *arr, Item item) {
   if (arr->length >= arr->allocated) {
     arr->allocated <<= 1;
     arr->items = realloc(arr->items, sizeof(Item) * arr->allocated);
+    if (arr->items == NULL) {
+      error("Unable to allocate additional space for array!");
+    }
   }
   arr->items[arr->length++] = item;
 }
@@ -47,6 +53,9 @@ void array_multiply(Array *array, int64_t factor) {
       array->allocated <<= 1;
     }
     array->items = realloc(array->items, sizeof(Item) * array->allocated);
+    if (array->items == NULL) {
+      error("Unable to allocate additional space for array!");
+    }
   }
   uint32_t cur_len = array->length;
   while (--factor > 0) {

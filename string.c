@@ -9,6 +9,9 @@
 
 String new_string() {
   String str = {malloc(STRING_INIT_SIZE), 0, STRING_INIT_SIZE};
+  if (str.str_data == NULL) {
+    error("Unable to allocate space for new string!");
+  }
   return str;
 }
 
@@ -18,6 +21,9 @@ void free_string(String *str) {
 
 String copy_string(String *str) {
   String new_str = {malloc(str->allocated), str->length, str->allocated};
+  if (new_str.str_data == NULL) {
+    error("Unable to allocate space for new string!");
+  }
   memcpy(new_str.str_data, str->str_data, str->length);
   return new_str;
 }
@@ -30,6 +36,9 @@ String create_string(char *to_copy) {
     new_len <<= 1;
   }
   String str = {malloc(new_len), old_len, new_len};
+  if (str.str_data == NULL) {
+    error("Unable to allocate space for new string!");
+  }
   strcpy(str.str_data, to_copy);
   return str;
 }
@@ -64,6 +73,9 @@ void string_add_char(String *str, char c) {
     str->allocated <<= 1;
     str->str_data = realloc(str->str_data, str->allocated);
   }
+  if (str->str_data == NULL) {
+    error("Unable to allocate additional space for string!");
+  }
   str->str_data[str->length++] = c;
 }
 
@@ -74,6 +86,9 @@ void string_add_str(String *str, String *to_append) {
       str->allocated <<= 1;
     }
     str->str_data = realloc(str->str_data, str->allocated);
+    if (str->str_data == NULL) {
+      error("Unable to allocate additional space for string!");
+    }
   }
   for (uint32_t i = 0; i < to_append->length; i++) {
     str->str_data[str->length + i] = to_append->str_data[i];
@@ -89,6 +104,9 @@ void string_add_c_str(String *str, char *to_append) {
       str->allocated <<= 1;
     }
     str->str_data = realloc(str->str_data, str->allocated);
+    if (str->str_data == NULL) {
+      error("Unable to allocate additional space for string!");
+    }
   }
   for (uint32_t i = 0; i < append_len; i++) {
     str->str_data[str->length + i] = to_append[i];
@@ -214,6 +232,9 @@ void string_multiply(String *str, int64_t factor) {
       str->allocated <<= 1;
     }
     str->str_data = realloc(str->str_data, str->allocated);
+    if (str->str_data == NULL) {
+      error("Unable to allocate additional space for string!");
+    }
   }
   uint32_t cur_len = str->length;
   while (factor-- > 0) {
