@@ -19,6 +19,7 @@ void free_string(String *str) {
   free(str->str_data);
 }
 
+// Returns a copy of a string
 String copy_string(String *str) {
   String new_str = {malloc(str->allocated), str->length, str->allocated};
   if (new_str.str_data == NULL) {
@@ -43,6 +44,8 @@ String create_string(char *to_copy) {
   return str;
 }
 
+// Compares one string to another, returning a negative value if str1 is less
+// than str1, a positive value if str2 is greater, and 0 if they are equal
 int string_compare(String *str1, String *str2) {
   uint32_t min_len = min(str1->length, str2->length);
   int result = strncmp(str1->str_data, str2->str_data, min_len);
@@ -114,6 +117,8 @@ void string_add_c_str(String *str, char *to_append) {
   str->length += append_len;
 }
 
+// Returns the position of the first occurrence of a character in a string,
+// returning -1 if it isn't in the string
 int64_t string_find_char(String *str, char c) {
   for (uint32_t i = 0; i < str->length; i++) {
     if (str->str_data[i] == c)
@@ -122,6 +127,8 @@ int64_t string_find_char(String *str, char c) {
   return -1;
 }
 
+// Returns the position of the first occurrence of to_find in str,
+// returning -1 if it's not in the string
 int64_t string_find_str(String *str, String *to_find) {
   for (uint32_t i = 0; i + to_find->length <= str->length; i++) {
     if (strncmp(str->str_data + i, to_find->str_data, to_find->length) == 0)
@@ -130,6 +137,9 @@ int64_t string_find_str(String *str, String *to_find) {
   return -1;
 }
 
+// Replaces a string with the string from every nth step, e.g. with a step size
+// of 3, "wordsmith" becomes "wdi". With a negative step size, the steps begin
+// from the end of the string
 void string_step_over(String *str, int64_t step_size) {
   if (step_size == 0) {
     error("Step size of string select must be nonzero!");
@@ -147,6 +157,7 @@ void string_step_over(String *str, int64_t step_size) {
   str->length = (str->length + 1) / step_size;
 }
 
+// Splits a string into parts divided by a given seperator string
 Item string_split(String *str, String *sep) {
   Item arr = make_array();
   Item cur_string = empty_string();
@@ -167,6 +178,8 @@ Item string_split(String *str, String *sep) {
   return arr;
 }
 
+// Returns an array item consisting of the given string split up into
+// substrings of a given length
 Item string_split_into_groups(String *str, int64_t group_size) {
   Item array = make_array();
   Item cur_string = empty_string();
@@ -194,6 +207,7 @@ Item string_split_into_groups(String *str, int64_t group_size) {
   return array;
 }
 
+// Remove a certain number of characters from the start of a string
 void string_remove_from_front(String *str, int64_t to_remove) {
   if (str->length - to_remove <= 0) {
     str->length = 0;
@@ -208,6 +222,7 @@ void string_remove_from_front(String *str, int64_t to_remove) {
   }
 }
 
+// Sorts a string. Utilizes counting sort and runs in O(n) time
 void string_sort(String *str) {
   uint32_t counts[256] = {0};
   for (uint32_t i = 0; i < str->length; i++) {
@@ -222,6 +237,7 @@ void string_sort(String *str) {
   }
 }
 
+// Repeats a string a given number of times
 void string_multiply(String *str, int64_t factor) {
   if (factor < 0) {
     error("Cannot multiply array by a negative argument!");
