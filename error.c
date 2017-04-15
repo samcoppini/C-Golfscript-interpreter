@@ -1,5 +1,5 @@
 // error.c
-// Contains functions printing error messages
+// Contains functions for printing error messages
 
 #include <stdarg.h>
 #include <stdlib.h>
