@@ -44,3 +44,5 @@
 # Strings and blocks
 "aaaabbbcdef" {aceeeeggg} - {bbbdf} = print
 {aceeeeggg} "aaaabbbcdef" - {ggg} = print
+
+n

@@ -42,3 +42,5 @@
 # Strings and blocks
 "abc 0 1    2" {1 2 4} + {abc 0 1    2 1 2 4} = print
 {1 2 4} "abc 0 1    2" + {1 2 4 abc 0 1    2} = print
+
+n

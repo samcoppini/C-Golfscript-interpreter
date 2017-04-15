@@ -28,3 +28,5 @@
 "abcdefghijkl" {111 =} ? ] [] = print
 {99 =}  {abcdefghijkl} ? 99 = print
 {111 =} {abcdefghijkl} ? ] [] = print
+
+n

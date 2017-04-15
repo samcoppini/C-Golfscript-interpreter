@@ -36,3 +36,5 @@
 
 # Folding over a block with a block
 {*9-} {abcdef} * 968587765155 = print
+
+n

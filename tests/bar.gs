@@ -36,3 +36,5 @@
 
 # Strings and blocks
 "1 2 3"{4 2 2 4 6} | {1 2346} = print
+
+n

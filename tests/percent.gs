@@ -30,3 +30,5 @@
 
 # Mapping over a string with a block
 "abcdefgh" {.} % "aabbccddeeffgghh" = print
+
+n

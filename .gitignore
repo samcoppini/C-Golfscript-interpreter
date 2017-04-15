@@ -2,3 +2,4 @@
 *.gs
 !/tests/*.gs
 *.o
+!builtin-examples.gs
