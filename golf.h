@@ -62,7 +62,7 @@ typedef struct TreeNode {
   uint16_t height;
 } TreeNode;
 
-// A set data structure for implementing setwise data structures on arrays
+// A set data structure for implementing setwise data operations on arrays
 typedef struct Set {
   TreeNode *root;
 } Set;
