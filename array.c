@@ -25,6 +25,23 @@ void array_push(Array *arr, Item item) {
   arr->items[arr->length++] = item;
 }
 
+// Removes a number of elements from the array's front
+void array_remove_from_front(Array *array, uint32_t to_remove) {
+  for (uint32_t i = 0; i < to_remove && i < array->length; i++) {
+    free_item(&array->items[i]);
+  }
+  if (to_remove >= array->length) {
+    array->length = 0;
+    return;
+  }
+  else {
+    array->length -= to_remove;
+  }
+  for (uint32_t i = 0; i < array->length; i++) {
+    array->items[i] = array->items[i + to_remove];
+  }
+}
+
 // Returns the index of an element, or -1 if it's not present in the array
 int64_t array_find(Array *array, Item *item) {
   for (uint32_t i = 0; i < array->length; i++) {

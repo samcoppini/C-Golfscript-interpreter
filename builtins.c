@@ -433,18 +433,9 @@ void builtin_greater_than() {
     else if (item1.type == TYPE_ARRAY) {
       if (item2.int_val < 0) {
         item2.int_val = item1.arr_val.length + item2.int_val;
-        if (item2.int_val < 0)
-          item2.int_val = 0;
       }
-      for (uint32_t i = 0; i < item2.int_val && i < item1.arr_val.length; i++) {
-        free_item(&item1.arr_val.items[i]);
-      }
-      if (item1.arr_val.length > item2.int_val)
-        item1.arr_val.length -= item2.int_val;
-      else
-        item1.arr_val.length = 0;
-      for (uint32_t i = 0; i < item1.arr_val.length; i++) {
-        item1.arr_val.items[i] = item1.arr_val.items[i + item2.int_val];
+      if (item2.int_val > 0) {
+        array_remove_from_front(&item1.arr_val, item2.int_val);
       }
       stack_push(item1);
     }

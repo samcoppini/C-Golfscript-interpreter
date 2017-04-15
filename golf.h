@@ -70,6 +70,7 @@ typedef struct Set {
 // array.c
 Array new_array();
 void array_push(Array *arr, Item item);
+void array_remove_from_front(Array *array, uint32_t to_remove);
 int64_t array_find(Array *arr, Item *item);
 void array_reverse(Array *array);
 void array_multiply(Array *array, int64_t factor);
