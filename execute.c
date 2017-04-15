@@ -283,8 +283,9 @@ void execute_string(String *str) {
 
   while (code_pos < str->length) {
     String tok = next_token(str, &code_pos);
-    if (map_has(&definitions, &tok)) {
-      execute_item(map_get(&definitions, &tok));
+    Item *defined_item = map_get(&definitions, &tok);
+    if (defined_item != NULL) {
+      execute_item(defined_item);
     }
     else if (tok.str_data[0] == ':') {
       if (stack.length == 0) {
