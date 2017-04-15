@@ -1,3 +1,13 @@
-all:
-	gcc *.c -Wall -Wextra -Werror -o "golf.exe" -std=c11 -pedantic -g \
-	-Wno-comment
+CC=gcc
+CFLAGS= -Wall -Wextra -Werror -Wno-comment -std=c11 -pedantic -g
+SOURCES=$(wildcard *.c)
+OBJS=$(SOURCES:.c=.o)
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+all: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS)
+
+clean:
+	rm $(OBJS)
