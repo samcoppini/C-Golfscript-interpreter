@@ -7,7 +7,7 @@ OBJS=$(SOURCES:.c=.o)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o "golf"
 
 clean:
 	rm $(OBJS)
