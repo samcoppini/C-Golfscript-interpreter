@@ -26,7 +26,7 @@ enum Type {
 };
 
 typedef struct String {
-  char *str_data;
+  unsigned char *str_data;
   uint32_t length, allocated;
 } String;
 

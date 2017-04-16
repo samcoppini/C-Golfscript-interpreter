@@ -296,7 +296,7 @@ void builtin_dollar_sign() {
     else if (to_sort.type == TYPE_BLOCK || to_sort.type == TYPE_STRING) {
       Item mapped_array = make_array();
       for (uint32_t i = 0; i < to_sort.str_val.length; i++) {
-        stack_push(make_integer((unsigned char) to_sort.str_val.str_data[i]));
+        stack_push(make_integer(to_sort.str_val.str_data[i]));
         execute_string(&item.str_val);
         array_push(&mapped_array.arr_val, stack_pop());
       }
