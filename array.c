@@ -87,9 +87,9 @@ Item join_array(Array *array, Item *sep) {
 
 void fold_array(Array *array, Item *block) {
   if (array->length > 0) {
-    stack_push(array->items[0]);
+    stack_push(make_copy(&array->items[0]));
     for (uint32_t i = 1; i < array->length; i++) {
-      stack_push(array->items[i]);
+      stack_push(make_copy(&array->items[i]));
       execute_string(&block->str_val);
     }
   }
