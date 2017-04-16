@@ -95,6 +95,24 @@ void fold_array(Array *array, Item *block) {
   }
 }
 
+void filter_array(Array *array, Item *block) {
+  uint32_t items_removed = 0;
+  for (uint32_t i = 0; i < array->length; i++) {
+    stack_push(make_copy(&array->items[i]));
+    execute_string(&block->str_val);
+    Item mapped_item = stack_pop();
+    if (item_boolean(&mapped_item)) {
+      array->items[i - items_removed] = array->items[i];
+    }
+    else {
+      free_item(&array->items[i]);
+      items_removed++;
+    }
+    free_item(&mapped_item);
+  }
+  array->length -= items_removed;
+}
+
 void array_multiply(Array *array, int64_t factor) {
   if (factor < 0) {
     error("Cannot multiply array by a negative argument!");

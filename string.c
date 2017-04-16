@@ -235,6 +235,23 @@ void fold_string(String *str, Item *block) {
   }
 }
 
+void filter_string(String *str, Item *block) {
+  uint32_t chars_removed = 0;
+  for (uint32_t i = 0; i < str->length; i++) {
+    stack_push(make_integer(str->str_data[i]));
+    execute_string(&block->str_val);
+    Item mapped_item = stack_pop();
+    if (item_boolean(&mapped_item)) {
+      str->str_data[i - chars_removed] = str->str_data[i];
+    }
+    else {
+      chars_removed++;
+    }
+    free_item(&mapped_item);
+  }
+  str->length -= chars_removed;
+}
+
 // Sorts a string. Utilizes counting sort and runs in O(n) time
 void string_sort(String *str) {
   uint32_t counts[256] = {0};
