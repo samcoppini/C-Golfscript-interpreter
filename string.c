@@ -222,6 +222,27 @@ void string_remove_from_front(String *str, int64_t to_remove) {
   }
 }
 
+Item string_join(String *str, String *sep) {
+  Item joined_str = empty_string();
+  for (uint32_t i = 0; i < str->length; i++) {
+    string_add_char(&joined_str.str_val, str->str_data[i]);
+    if (i + 1 < str->length) {
+      string_add_str(&joined_str.str_val, sep);
+    }
+  }
+  return joined_str;
+}
+
+void fold_string(String *str, Item *block) {
+  if (str->length > 0) {
+    stack_push(make_integer(str->str_data[0]));
+    for (uint32_t i = 1; i < str->length; i++) {
+      stack_push(make_integer(str->str_data[i]));
+      execute_string(&block->str_val);
+    }
+  }
+}
+
 // Sorts a string. Utilizes counting sort and runs in O(n) time
 void string_sort(String *str) {
   uint32_t counts[256] = {0};

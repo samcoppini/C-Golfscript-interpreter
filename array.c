@@ -1,6 +1,7 @@
 // array.c
 // Contains functions for manipulating golfscript arrays
 
+#include <assert.h>
 #include <stdlib.h>
 #include "golf.h"
 
@@ -57,6 +58,40 @@ void array_reverse(Array *array) {
     Item temp = array->items[i];
     array->items[i] = array->items[array->length - i - 1];
     array->items[array->length - i - 1] = temp;
+  }
+}
+
+// Joins an array's elements with a string or array in between each element
+Item join_array(Array *array, Item *sep) {
+  Item joined_array;
+
+  if (sep->type == TYPE_ARRAY)
+    joined_array = make_array();
+  else if (sep->type == TYPE_STRING)
+    joined_array = empty_string();
+  else
+    assert(false);
+
+  for (uint32_t i = 0; i < array->length; i++) {
+    Item to_add = make_copy(&array->items[i]);
+    items_add(&joined_array, &to_add);
+    if (i + 1 < array->length) {
+      to_add = make_copy(sep);
+      items_add(&joined_array, sep);
+      free_item(&to_add);
+    }
+  }
+
+  return joined_array;
+}
+
+void fold_array(Array *array, Item *block) {
+  if (array->length > 0) {
+    stack_push(array->items[0]);
+    for (uint32_t i = 1; i < array->length; i++) {
+      stack_push(array->items[i]);
+      execute_string(&block->str_val);
+    }
   }
 }
 

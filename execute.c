@@ -315,6 +315,12 @@ void execute_string(String *str) {
   }
 }
 
+void repeat_block(Item *block, int64_t times) {
+  while (times-- > 0) {
+    execute_string(&block->str_val);
+  }
+}
+
 void execute_item(Item *item) {
   if (item->type == TYPE_FUNCTION) {
     item->function();

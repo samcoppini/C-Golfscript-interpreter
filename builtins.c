@@ -47,86 +47,39 @@ void builtin_asterisk() {
     swap_items(&item1, &item2);
 
   if (item2.type == TYPE_INTEGER) {
-    if (item1.type == TYPE_INTEGER) {
+    if (item1.type == TYPE_INTEGER)
       item1.int_val *= item2.int_val;
-      stack_push(item1);
-    }
-    else if (item1.type == TYPE_ARRAY) {
+    else if (item1.type == TYPE_ARRAY)
       array_multiply(&item1.arr_val, item2.int_val);
-      stack_push(item1);
-    }
-    else if (item1.type == TYPE_STRING) {
+    else if (item1.type == TYPE_STRING)
       string_multiply(&item1.str_val, item2.int_val);
-      stack_push(item1);
-    }
     else if (item1.type == TYPE_BLOCK) {
-      while (item2.int_val-- > 0) {
-        execute_string(&item1.str_val);
-      }
-      free(item1.str_val.str_data);
+      repeat_block(&item1, item2.int_val);
+      free_item(&item1);
+      return;
     }
+    stack_push(item1);
+    return;
   }
   else if (item2.type == TYPE_ARRAY) {
-    if (item1.type == TYPE_ARRAY || item1.type == TYPE_STRING) {
-      Item joined_array;
-
-      if (item1.type == TYPE_ARRAY)
-        joined_array = make_array();
-      else
-        joined_array = empty_string();
-
-      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
-        Item to_add = make_copy(&item2.arr_val.items[i]);
-        items_add(&joined_array, &to_add);
-        if (i + 1 < item2.arr_val.length) {
-          to_add = make_copy(&item1);
-          items_add(&joined_array, &to_add);
-        }
-      }
-      free_item(&item1);
-      free_item(&item2);
-      stack_push(joined_array);
-    }
-    else if (item1.type == TYPE_BLOCK) {
-      if (item2.arr_val.length > 0) {
-        stack_push(item2.arr_val.items[0]);
-        for (uint32_t i = 1; i < item2.arr_val.length; i++) {
-          stack_push(item2.arr_val.items[i]);
-          execute_string(&item1.str_val);
-        }
-      }
-      free(item2.arr_val.items);
-      free(item1.str_val.str_data);
-    }
+    if (item1.type == TYPE_ARRAY || item1.type == TYPE_STRING)
+      stack_push(join_array(&item2.arr_val, &item1));
+    else if (item1.type == TYPE_BLOCK)
+      fold_array(&item2.arr_val, &item1);
   }
-  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
-    if (item1.type == TYPE_STRING) {
-      Item joined_str = empty_string();
-      for (uint32_t i = 0; i < item2.str_val.length; i++) {
-        string_add_char(&joined_str.str_val, item2.str_val.str_data[i]);
-        if (i + 1 < item2.str_val.length) {
-          string_add_str(&joined_str.str_val, &item1.str_val);
-        }
-      }
-      free(item1.str_val.str_data);
-      free(item2.str_val.str_data);
-      stack_push(joined_str);
-    }
-    else if (item1.type == TYPE_BLOCK) {
-      if (item2.type == TYPE_BLOCK) {
-        swap_items(&item1, &item2);
-      }
-      if (item2.str_val.length > 0) {
-        stack_push(make_integer(item2.str_val.str_data[0]));
-        for (uint32_t i = 1; i < item2.str_val.length; i++) {
-          stack_push(make_integer(item2.str_val.str_data[i]));
-          execute_string(&item1.str_val);
-        }
-      }
-      free(item2.str_val.str_data);
-      free(item1.str_val.str_data);
-    }
+  else if (item2.type == TYPE_STRING) {
+    if (item1.type == TYPE_STRING)
+      stack_push(string_join(&item2.str_val, &item1.str_val));
+    else if (item1.type == TYPE_BLOCK)
+      fold_string(&item2.str_val, &item1);
   }
+  else if (item2.type == TYPE_BLOCK) {
+    if (item1.type == TYPE_BLOCK)
+      fold_string(&item1.str_val, &item2);
+  }
+
+  free_item(&item1);
+  free_item(&item2);
 }
 
 void builtin_at() {
