@@ -19,6 +19,20 @@ void free_string(String *str) {
   free(str->str_data);
 }
 
+// Makes sure that the length of the allocated string is at least new_len bytes
+// long, and if not, we reallocate more space for the string
+void string_request_size(String *str, uint32_t new_len) {
+  if (new_len > str->allocated) {
+    do {
+      str->allocated <<= 1;
+    } while (new_len > str->allocated);
+    str->str_data = realloc(str->str_data, str->allocated);
+    if (str->str_data == NULL) {
+      error("Unable to allocate additional space for string!");
+    }
+  }
+}
+
 // Returns a copy of a string
 String copy_string(String *str) {
   String new_str = {malloc(str->allocated), str->length, str->allocated};
@@ -72,27 +86,13 @@ void string_reverse(String *str) {
 
 // Adds a character to the end of a string
 void string_add_char(String *str, char c) {
-  if (str->length >= str->allocated) {
-    str->allocated <<= 1;
-    str->str_data = realloc(str->str_data, str->allocated);
-  }
-  if (str->str_data == NULL) {
-    error("Unable to allocate additional space for string!");
-  }
+  string_request_size(str, str->length + 1);
   str->str_data[str->length++] = c;
 }
 
 // Adds a string to the end of a string
 void string_add_str(String *str, String *to_append) {
-  if (str->length + to_append->length >= str->allocated) {
-    while (str->length + to_append->length >= str->allocated) {
-      str->allocated <<= 1;
-    }
-    str->str_data = realloc(str->str_data, str->allocated);
-    if (str->str_data == NULL) {
-      error("Unable to allocate additional space for string!");
-    }
-  }
+  string_request_size(str, str->length + to_append->length);
   for (uint32_t i = 0; i < to_append->length; i++) {
     str->str_data[str->length + i] = to_append->str_data[i];
   }
@@ -102,15 +102,7 @@ void string_add_str(String *str, String *to_append) {
 // Adds an old-school null-terminated C string to the end of a string
 void string_add_c_str(String *str, char *to_append) {
   size_t append_len = strlen(to_append);
-  if (str->length + append_len >= str->allocated) {
-    while (str->length + append_len >= str->allocated) {
-      str->allocated <<= 1;
-    }
-    str->str_data = realloc(str->str_data, str->allocated);
-    if (str->str_data == NULL) {
-      error("Unable to allocate additional space for string!");
-    }
-  }
+  string_request_size(str, str->length + append_len);
   for (uint32_t i = 0; i < append_len; i++) {
     str->str_data[str->length + i] = to_append[i];
   }
@@ -264,15 +256,7 @@ void string_multiply(String *str, int64_t factor) {
     error("Cannot multiply array by a negative argument!");
   }
   uint32_t new_len = str->length * factor;
-  if (new_len > str->allocated) {
-    while (new_len > str->allocated) {
-      str->allocated <<= 1;
-    }
-    str->str_data = realloc(str->str_data, str->allocated);
-    if (str->str_data == NULL) {
-      error("Unable to allocate additional space for string!");
-    }
-  }
+  string_request_size(str, new_len);
   uint32_t cur_len = str->length;
   while (factor > 1) {
     factor -= 1;
