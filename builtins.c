@@ -394,8 +394,9 @@ void builtin_greater_than() {
     }
   }
   else {
-    coerce_types(&item1, &item2);
     stack_push(make_integer(item_compare(&item1, &item2) < 0));
+    free_item(&item1);
+    free_item(&item2);
   }
 }
 
@@ -477,8 +478,9 @@ void builtin_less_than() {
     }
   }
   else {
-    coerce_types(&item1, &item2);
     stack_push(make_integer(item_compare(&item1, &item2) > 0));
+    free_item(&item1);
+    free_item(&item2);
   }
 }
 
