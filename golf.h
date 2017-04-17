@@ -67,15 +67,23 @@ typedef struct Set {
   TreeNode *root;
 } Set;
 
+extern Array stack;
+extern Array bracket_stack;
+
 // array.c
 Array new_array();
+void free_array(Array *array);
+Array array_from_string(String *str);
 void array_push(Array *arr, Item item);
 void array_remove_from_front(Array *array, uint32_t to_remove);
 int64_t array_find(Array *arr, Item *item);
 void array_reverse(Array *array);
 Item join_array(Array *array, Item *sep);
+void map_array(Array *array, Item *block);
 void fold_array(Array *array, Item *block);
 void filter_array(Array *array, Item *block);
+void array_remove_empty_strings(Array *array);
+void array_remove_empty_arrays(Array *array);
 void array_multiply(Array *array, int64_t factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_split(Array *array, Array *sep);
@@ -185,6 +193,7 @@ void string_add_str(String *str, String *to_append);
 void string_add_c_str(String *str, char *to_append);
 void string_remove_from_front(String *str, int64_t to_remove);
 Item string_join(String *str, String *sep);
+void map_string(String *str, Item *block);
 void fold_string(String *str, Item *block);
 void filter_string(String *str, Item *block);
 int64_t string_find_char(String *str, char c);

@@ -225,6 +225,33 @@ Item string_join(String *str, String *sep) {
   return joined_str;
 }
 
+void map_string(String *str, Item *block) {
+  Item mapped_str = empty_string();
+  for (uint32_t i = 0; i < str->length; i++) {
+    uint32_t start_stack_size = stack.length;
+    stack_push(make_integer(str->str_data[i]));
+    execute_string(&block->str_val);
+    for (uint32_t j = start_stack_size; j < stack.length; j++) {
+      Item new_item = stack.items[j];
+      if (new_item.type == TYPE_INTEGER) {
+        string_add_char(&mapped_str.str_val, new_item.int_val);
+      }
+      else {
+        items_add(&mapped_str, &new_item);
+        if (mapped_str.type == TYPE_BLOCK) {
+          if (i == 0) {
+            string_remove_from_front(&mapped_str.str_val, 1);
+          }
+          mapped_str.type = TYPE_STRING;
+        }
+      }
+    }
+    stack.length = min(stack.length, start_stack_size);
+  }
+  free_string(str);
+  *str = mapped_str.str_val;
+}
+
 void fold_string(String *str, Item *block) {
   if (str->length > 0) {
     stack_push(make_integer(str->str_data[0]));

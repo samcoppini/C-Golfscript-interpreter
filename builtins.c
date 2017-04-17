@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include "golf.h"
 
-extern Array stack;
-extern Array bracket_stack;
-
 void builtin_abs() {
   Item item = stack_pop();
   if (item.type == TYPE_INTEGER) {
@@ -501,99 +498,44 @@ void builtin_percent() {
   }
 
   if (item2.type == TYPE_INTEGER) {
-    if (item1.type == TYPE_INTEGER) {
-      item2.int_val %= item1.int_val;
-      stack_push(item2);
-    }
-    else if (item1.type == TYPE_ARRAY) {
+    if (item1.type == TYPE_INTEGER)
+      item1.int_val = item2.int_val % item1.int_val;
+    else if (item1.type == TYPE_ARRAY)
       array_step_over(&item1.arr_val, item2.int_val);
-      stack_push(item1);
-    }
-    else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
+    else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK)
       string_step_over(&item1.str_val, item2.int_val);
-      stack_push(item1);
-    }
+    stack_push(item1);
   }
   else if (item2.type == TYPE_ARRAY) {
     if (item1.type == TYPE_ARRAY) {
       array_split(&item2.arr_val, &item1.arr_val);
-      Array to_remove = new_array();
-      array_push(&to_remove, make_array());
-      array_subtract(&item2.arr_val, &to_remove);
-      stack_push(item2);
-      free_item(&item1);
-      free(to_remove.items);
+      array_remove_empty_arrays(&item2.arr_val);
     }
     else if (item1.type == TYPE_STRING) {
-      Array str_array = new_array();
-      for (uint32_t i = 0; i < item1.str_val.length; i++) {
-        array_push(&str_array, make_integer(item1.str_val.str_data[i]));
-      }
-      free(item1.str_val.str_data);
-      item1.arr_val = str_array;
-      item1.type = TYPE_ARRAY;
-      array_split(&item1.arr_val, &item2.arr_val);
-      Array to_remove = new_array();
-      array_push(&to_remove, make_array());
-      array_subtract(&item1.arr_val, &to_remove);
-      stack_push(item1);
+      Array str_array = array_from_string(&item1.str_val);
+      array_split(&str_array, &item2.arr_val);
+      array_remove_empty_arrays(&str_array);
       free_item(&item2);
-      free(to_remove.items);
+      item2.arr_val = str_array;
     }
     else if (item1.type == TYPE_BLOCK) {
-      Item mapped_array = make_array();
-      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
-        uint32_t start_stack_size = stack.length;
-        stack_push(make_copy(&item2.arr_val.items[i]));
-        execute_string(&item1.str_val);
-        for (uint32_t j = start_stack_size; j < stack.length; j++) {
-          array_push(&mapped_array.arr_val, stack.items[j]);
-        }
-        stack.length = min(stack.length, start_stack_size);
-      }
-      stack_push(mapped_array);
-      free_item(&item1);
-      free_item(&item2);
+      map_array(&item2.arr_val, &item1);
     }
+    stack_push(item2);
+    free_item(&item1);
   }
   else if (item2.type == TYPE_STRING) {
     if (item1.type == TYPE_STRING) {
       Item split_string = string_split(&item2.str_val, &item1.str_val);
-      Array to_remove = new_array();
-      array_push(&to_remove, empty_string());
-      array_subtract(&split_string.arr_val, &to_remove);
-      stack_push(split_string);
-      free_item(&item1);
+      array_remove_empty_strings(&split_string.arr_val);
       free_item(&item2);
-      free(to_remove.items);
+      item2 = split_string;
     }
     else if (item1.type == TYPE_BLOCK) {
-      Item mapped_str = empty_string();
-      for (uint32_t i = 0; i < item2.arr_val.length; i++) {
-        uint32_t start_stack_size = stack.length;
-        stack_push(make_integer(item2.str_val.str_data[i]));
-        execute_string(&item1.str_val);
-        for (uint32_t j = start_stack_size; j < stack.length; j++) {
-          Item new_item = stack.items[j];
-          if (new_item.type == TYPE_INTEGER) {
-            string_add_char(&mapped_str.str_val, new_item.int_val);
-          }
-          else {
-            items_add(&mapped_str, &new_item);
-            if (mapped_str.type == TYPE_BLOCK) {
-              if (i == 0) {
-                string_remove_from_front(&mapped_str.str_val, 1);
-              }
-              mapped_str.type = TYPE_STRING;
-            }
-          }
-        }
-        stack.length = min(stack.length, start_stack_size);
-      }
-      stack_push(mapped_str);
-      free_item(&item1);
-      free_item(&item2);
+      map_string(&item2.str_val, &item1);
     }
+    stack_push(item2);
+    free_item(&item1);
   }
   else if (item1.type == TYPE_BLOCK && item2.type == TYPE_BLOCK) {
     error("%% operation undefined for two blocks!");

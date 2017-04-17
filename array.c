@@ -15,6 +15,22 @@ Array new_array() {
   return arr;
 }
 
+void free_array(Array *array) {
+  for (uint32_t i = 0; i < array->length; i++) {
+    free_item(&array->items[i]);
+  }
+  free(array->items);
+}
+
+// Converts a string into an array of integers
+Array array_from_string(String *str) {
+  Array int_array = new_array();
+  for (uint32_t i = 0; i < str->length; i++) {
+    array_push(&int_array, make_integer(str->str_data[i]));
+  }
+  return int_array;
+}
+
 void array_push(Array *arr, Item item) {
   if (arr->length >= arr->allocated) {
     arr->allocated <<= 1;
@@ -85,6 +101,21 @@ Item join_array(Array *array, Item *sep) {
   return joined_array;
 }
 
+void map_array(Array *array, Item *block) {
+  Array mapped_array = new_array();
+  for (uint32_t i = 0; i < array->length; i++) {
+    uint32_t start_stack_size = stack.length;
+    stack_push(array->items[i]);
+    execute_string(&block->str_val);
+    for (uint32_t j = start_stack_size; j < stack.length; j++) {
+      array_push(&mapped_array, stack.items[j]);
+    }
+    stack.length = min(stack.length, start_stack_size);
+  }
+  free_array(array);
+  *array = mapped_array;
+}
+
 void fold_array(Array *array, Item *block) {
   if (array->length > 0) {
     stack_push(make_copy(&array->items[0]));
@@ -111,6 +142,40 @@ void filter_array(Array *array, Item *block) {
     free_item(&mapped_item);
   }
   array->length -= items_removed;
+}
+
+// Removes all empty strings from the array
+void array_remove_empty_strings(Array *array) {
+  uint32_t removed_elements = 0;
+  for (uint32_t i = 0; i < array->length; i++) {
+    if (array->items[i].type == TYPE_STRING &&
+        array->items[i].str_val.length == 0)
+    {
+      free_item(&array->items[i]);
+      removed_elements++;
+    }
+    else if (removed_elements > 0) {
+      array->items[i - removed_elements] = array->items[i];
+    }
+  }
+  array->length -= removed_elements;
+}
+
+// Removes all empty arrays from the array
+void array_remove_empty_arrays(Array *array) {
+  uint32_t removed_elements = 0;
+  for (uint32_t i = 0; i < array->length; i++) {
+    if (array->items[i].type == TYPE_ARRAY &&
+        array->items[i].arr_val.length == 0)
+    {
+      free_item(&array->items[i]);
+      removed_elements++;
+    }
+    else if (removed_elements > 0) {
+      array->items[i - removed_elements] = array->items[i];
+    }
+  }
+  array->length -= removed_elements;
 }
 
 void array_multiply(Array *array, int64_t factor) {
