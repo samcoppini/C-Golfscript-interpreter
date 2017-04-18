@@ -130,6 +130,10 @@ int hex_digit_val(char c) {
     return -1;
 }
 
+bool is_octal_digit(char c) {
+  return c >= '0' && c <= '7';
+}
+
 String get_number(String *str, String *cur_tok, uint32_t *code_pos) {
   while (++(*code_pos) < str->length && isdigit(str->str_data[*code_pos])) {
     string_add_char(cur_tok, str->str_data[*code_pos]);
@@ -159,7 +163,7 @@ String get_raw_string(String *str, String *cur_tok, uint32_t *code_pos) {
 
 String get_escaped_string(String *str, String *cur_tok, uint32_t *code_pos) {
   while (++(*code_pos) < str->length) {
-    char c = str->str_data[*code_pos];
+    unsigned char c = str->str_data[*code_pos];
     if (c == '"') {
       ++*code_pos;
       return *cur_tok;
@@ -181,6 +185,7 @@ String get_escaped_string(String *str, String *cur_tok, uint32_t *code_pos) {
           case 't': c = '\t';   break;
           case 'v': c = '\v';   break;
           case 'x':
+            // Hexadecimal literal
             if (++(*code_pos) >= str->length)
               error("Unmatched \" encountered in the code!");
             if (hex_digit_val(str->str_data[*code_pos]) < 0)
@@ -191,6 +196,23 @@ String get_escaped_string(String *str, String *cur_tok, uint32_t *code_pos) {
             {
               c <<= 4;
               c += hex_digit_val(str->str_data[++(*code_pos)]);
+            }
+            break;
+          default:
+            // Octal literals
+            if (is_octal_digit(c)) {
+              c = 0;
+              for (int i = 0; i < 3; i++) {
+                c = c << 3 | (str->str_data[*code_pos] - '0');
+                if (*code_pos + 1 >= str->length)
+                  error("Unmatched \" encountered in the code!");
+                if (i < 2 && is_octal_digit(str->str_data[*code_pos + 1])) {
+                  *code_pos += 1;
+                }
+                else {
+                  break;
+                }
+              }
             }
             break;
         }
