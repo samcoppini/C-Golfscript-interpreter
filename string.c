@@ -121,10 +121,44 @@ int64_t string_find_char(String *str, char c) {
 
 // Returns the position of the first occurrence of to_find in str,
 // returning -1 if it's not in the string
+// Uses the Knuth-Morris-Pratt algorithm for O(n + k) time complexity
 int64_t string_find_str(String *str, String *to_find) {
-  for (uint32_t i = 0; i + to_find->length <= str->length; i++) {
-    if (memcmp(str->str_data + i, to_find->str_data, to_find->length) == 0)
-      return i;
+  if (to_find->length == 0) {
+    return 0;
+  }
+  else if (to_find->length == 1) {
+    return string_find_char(str, to_find->str_data[0]);
+  }
+
+  int64_t *jump_table = malloc(sizeof(int64_t) * to_find->length);
+  jump_table[0] = -1;
+  for (uint32_t i = 1; i < to_find->length; i++) {
+    jump_table[i] = jump_table[i - 1] + 1;
+    while (jump_table[i] > 0 &&
+           to_find->str_data[i - 1] != to_find->str_data[jump_table[i] - 1])
+    {
+      jump_table[i] = jump_table[jump_table[i] - 1] + 1;
+    }
+  }
+
+  uint32_t to_find_pos = 0;
+  uint32_t search_pos = 0;
+  while (search_pos < str->length) {
+    if (str->str_data[search_pos] == to_find->str_data[to_find_pos]) {
+      to_find_pos++;
+      if (to_find_pos == to_find->length) {
+        return search_pos - to_find->length + 1;
+      }
+      search_pos++;
+    }
+    else {
+      if (jump_table[to_find_pos] == -1) {
+        search_pos++;
+      }
+      else {
+        to_find_pos = jump_table[to_find_pos];
+      }
+    }
   }
   return -1;
 }
