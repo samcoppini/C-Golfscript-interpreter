@@ -148,7 +148,12 @@ int item_compare(Item *item1, Item *item2) {
   }
   switch (item1->type) {
     case TYPE_INTEGER:
-      return item1->int_val - item2->int_val;
+      if (item1->int_val > item2->int_val)
+        return 1;
+      else if (item1->int_val < item2->int_val)
+        return -1;
+      else
+        return 0;
 
     case TYPE_ARRAY:
       if (item2->type == TYPE_ARRAY) {
