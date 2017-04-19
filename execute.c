@@ -91,10 +91,14 @@ void init_interpreter() {
 }
 
 void end_interpreter() {
-  for (uint32_t i = 0; i < stack.length; i++) {
-    output_item(&stack.items[i]);
-    free_item(&stack.items[i]);
-  }
+  Item stack_as_item = {TYPE_ARRAY, .arr_val = stack};
+  stack = new_array();
+  stack_push(stack_as_item);
+  String puts_str = create_string("puts");
+  Item *puts_function = map_get(&definitions, &puts_str);
+  execute_item(puts_function);
+  free_string(&puts_str);
+  free_array(&stack);
   free_map(&definitions);
 }
 
