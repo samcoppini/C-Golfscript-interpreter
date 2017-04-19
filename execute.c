@@ -352,7 +352,9 @@ void execute_item(Item *item) {
     item->function();
   }
   else if (item->type == TYPE_BLOCK) {
-    execute_string(&item->str_val);
+    String copied_str = copy_string(&item->str_val);
+    execute_string(&copied_str);
+    free_string(&copied_str);
   }
   else {
     stack_push(make_copy(item));
