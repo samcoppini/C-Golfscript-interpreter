@@ -135,10 +135,17 @@ bool item_boolean(Item *item) {
   }
 }
 
+// Returns whether two types are "compatible", meaning that they can
+// be considered as the same type in certain contexts. For instance,
+// an array consisting solely of integers is considered equivalent to
+// a string or a block, but not equivalent with an integer.
 bool types_compatible(enum Type type1, enum Type type2) {
   return (type1 == TYPE_INTEGER) == (type2 == TYPE_INTEGER);
 }
 
+// Compares two items, returing a positive value if item1 is "greater"
+// than item2, a negative value if item2 is greater, and 0 if the two
+// items are the same
 int item_compare(Item *item1, Item *item2) {
   if (!types_compatible(item1->type, item2->type)) {
     return item1->type - item2->type;
