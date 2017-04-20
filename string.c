@@ -147,6 +147,7 @@ int64_t string_find_str(String *str, String *to_find) {
     if (str->str_data[search_pos] == to_find->str_data[to_find_pos]) {
       to_find_pos++;
       if (to_find_pos == to_find->length) {
+        free(jump_table);
         return search_pos - to_find->length + 1;
       }
       search_pos++;
@@ -160,6 +161,7 @@ int64_t string_find_str(String *str, String *to_find) {
       }
     }
   }
+  free(jump_table);
   return -1;
 }
 
