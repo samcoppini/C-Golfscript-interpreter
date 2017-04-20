@@ -9,14 +9,18 @@ Set new_set() {
   return set;
 }
 
+void free_node(TreeNode *node) {
+  free_item(&node->item);
+  free(node);
+}
+
 // Frees a tree node and all of its descendants
 static void free_tree(TreeNode *node) {
   if (node == NULL)
     return;
   free_tree(node->left);
   free_tree(node->right);
-  free_item(&node->item);
-  free(node);
+  free_node(node);
 }
 
 void free_set(Set *set) {
@@ -218,19 +222,20 @@ static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
       // is smaller than the current node, copy that node to our
       // current node, and delete the node that we copied
       TreeNode *to_replace = get_largest_node(cur_node->left);
+      free_item(&cur_node->item);
       cur_node->item = to_replace->item;
       cur_node->left = delete_node(cur_node->left, &to_replace->item);
     }
     else if (cur_node->left != NULL || cur_node->right != NULL) {
       // If the node has one child, we just return that child
       TreeNode *child = cur_node->left ? cur_node->left: cur_node->right;
-      free(cur_node);
+      free_node(cur_node);
       return child;
     }
     else {
       // No children. Easiest case to handle (and also a pretty great song)
       // We just return NULL for this case
-      free(cur_node);
+      free_node(cur_node);
       return NULL;
     }
   }
