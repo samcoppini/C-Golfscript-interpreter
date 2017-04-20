@@ -286,6 +286,7 @@ void builtin_dollar_sign() {
       stack_push(to_sort);
       free_item(&mapped_array);
     }
+    free_item(&item);
   }
 }
 
