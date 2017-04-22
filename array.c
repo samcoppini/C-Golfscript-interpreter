@@ -290,7 +290,7 @@ void array_step_over(Array *array, int64_t step_size) {
     array_reverse(array);
     step_size *= -1;
   }
-  if (step_size == 1) {
+  if (step_size == 1 || array->length == 0) {
     return;
   }
 
