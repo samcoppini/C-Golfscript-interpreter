@@ -8,7 +8,12 @@
 #include "golf.h"
 
 Item make_integer(int64_t int_val) {
-  Item item = {TYPE_INTEGER, .int_val = int_val};
+  Item item = {TYPE_INTEGER, .int_val = bigint_from_int64(int_val)};
+  return item;
+}
+
+Item make_integer_from_bigint(Bigint *bigint) {
+  Item item = {TYPE_INTEGER, .int_val = copy_bigint(bigint)};
   return item;
 }
 
@@ -44,7 +49,7 @@ Item make_copy(Item *item) {
   new_item.type = item->type;
 
   if (item->type == TYPE_INTEGER)
-    new_item.int_val = item->int_val;
+    new_item.int_val = copy_bigint(&item->int_val);
   else if (item->type == TYPE_STRING || item->type == TYPE_BLOCK)
     new_item.str_val = copy_string(&item->str_val);
   else if (item->type == TYPE_ARRAY) {
@@ -63,7 +68,7 @@ String get_literal(Item *item) {
   String str = new_string();
   if (item->type == TYPE_INTEGER) {
     free(str.str_data);
-    str = int_to_string(item->int_val);
+    str = bigint_to_string(&item->int_val);
   }
   else if (item->type == TYPE_STRING) {
     string_add_char(&str, '"');
@@ -121,7 +126,7 @@ String get_literal(Item *item) {
 bool item_boolean(Item *item) {
   switch (item->type) {
     case TYPE_INTEGER:
-      return item->int_val != 0;
+      return !bigint_is_zero(&item->int_val);
 
     case TYPE_STRING:
     case TYPE_BLOCK:
@@ -155,12 +160,7 @@ int item_compare(Item *item1, Item *item2) {
   }
   switch (item1->type) {
     case TYPE_INTEGER:
-      if (item1->int_val > item2->int_val)
-        return 1;
-      else if (item1->int_val < item2->int_val)
-        return -1;
-      else
-        return 0;
+      return bigint_compare(&item1->int_val, &item2->int_val);
 
     case TYPE_ARRAY:
       if (item2->type == TYPE_ARRAY) {
@@ -180,8 +180,15 @@ int item_compare(Item *item1, Item *item2) {
             return 1;
           if (item1->arr_val.items[i].type != TYPE_INTEGER)
             return 1;
-          if (item1->arr_val.items[i].int_val - item2->str_val.str_data[i] != 0)
-            return item1->arr_val.items[i].int_val - item2->str_val.str_data[i];
+          if (!bigint_fits_in_uint32(&item1->arr_val.items[i].int_val))
+            return 1;
+          uint32_t int_val = bigint_to_uint32(&item1->arr_val.items[i].int_val);
+          if (int_val != item2->str_val.str_data[i]) {
+            if (int_val > item2->str_val.str_data[i])
+              return 1;
+            else
+              return -1;
+          }
         }
         return item1->arr_val.length - item2->str_val.length;
       }
@@ -204,7 +211,9 @@ bool items_equal(Item *item1, Item *item2) {
 void items_add(Item *item1, Item *item2) {
   coerce_types(item1, item2);
   if (item1->type == TYPE_INTEGER) {
-    item1->int_val += item2->int_val;
+    Bigint sum = bigint_add(&item1->int_val, &item2->int_val);
+    free_bigint(&item1->int_val);
+    item1->int_val = sum;
   }
   else if (item1->type == TYPE_STRING) {
     string_add_str(&item1->str_val, &item2->str_val);
@@ -237,11 +246,17 @@ void free_item(Item *item) {
     }
     free(item->arr_val.items);
   }
+  else if (item->type == TYPE_INTEGER) {
+    free_bigint(&item->int_val);
+  }
 }
 
 void output_item(Item *item) {
   if (item->type == TYPE_INTEGER) {
-    printf("%lld", item->int_val);
+    String str = bigint_to_string(&item->int_val);
+    string_add_char(&str, '\0');
+    printf("%s", str.str_data);
+    free_string(&str);
   }
   else if (item->type == TYPE_STRING) {
     for (uint32_t i = 0; i < item->str_val.length; i++) {
@@ -269,7 +284,7 @@ String array_to_string(Item *array) {
   for (uint32_t i = 0; i < array->arr_val.length; i++) {
     Item *cur_item = &array->arr_val.items[i];
     if (cur_item->type == TYPE_INTEGER)
-      string_add_char(&str, cur_item->int_val);
+      string_add_char(&str, cur_item->int_val.digits[0] & 0xFF);
     else if (cur_item->type == TYPE_STRING)
       string_add_str(&str, &cur_item->str_val);
     else if (cur_item->type == TYPE_BLOCK)
@@ -313,9 +328,9 @@ void coerce_types(Item *item1, Item *item2) {
           free(arr_str.str_data);
         }
         else if (cur_item->type == TYPE_INTEGER) {
-          String int_str = int_to_string(cur_item->int_val);
+          String int_str = bigint_to_string(&cur_item->int_val);
           string_add_str(&block_str, &int_str);
-          free(int_str.str_data);
+          free_string(&int_str);
         }
         if (i + 1 < item2->arr_val.length)
           string_add_char(&block_str, ' ');
@@ -326,7 +341,9 @@ void coerce_types(Item *item1, Item *item2) {
     }
     else if (item2->type == TYPE_INTEGER) {
       item2->type = TYPE_BLOCK;
-      item2->str_val = int_to_string(item2->int_val);
+      Bigint int_temp = item2->int_val;
+      item2->str_val = bigint_to_string(&item2->int_val);
+      free_bigint(&int_temp);
     }
   }
   else if (item1->type == TYPE_STRING) {
@@ -338,15 +355,17 @@ void coerce_types(Item *item1, Item *item2) {
     }
     else if (item2->type == TYPE_INTEGER) {
       item2->type = TYPE_STRING;
-      item2->str_val = int_to_string(item2->int_val);
+      Bigint int_temp = item2->int_val;
+      item2->str_val = bigint_to_string(&item2->int_val);
+      free_bigint(&int_temp);
     }
   }
   else if (item1->type == TYPE_ARRAY) {
     if (item2->type == TYPE_INTEGER) {
-      int64_t int_val = item2->int_val;
+      Array coerced_array = new_array();
+      array_push(&coerced_array, *item2);
       item2->type = TYPE_ARRAY;
-      item2->arr_val = new_array();
-      array_push(&item2->arr_val, make_integer(int_val));
+      item2->arr_val = coerced_array;
     }
   }
 }

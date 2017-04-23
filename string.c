@@ -168,21 +168,23 @@ int64_t string_find_str(String *str, String *to_find) {
 // Replaces a string with the string from every nth step, e.g. with a step size
 // of 3, "wordsmith" becomes "wdi". With a negative step size, the steps begin
 // from the end of the string
-void string_step_over(String *str, int64_t step_size) {
-  if (step_size == 0) {
+void string_step_over(String *str, Bigint step_size) {
+  if (bigint_is_zero(&step_size)) {
     error("Step size of string select must be nonzero!");
   }
-  else if (step_size < 0) {
+  else if (step_size.is_negative) {
     string_reverse(str);
-    step_size *= -1;
+    step_size.is_negative = false;
   }
-  if (step_size == 1) {
+  if (!bigint_fits_in_uint32(&step_size)) {
+    str->length = min(str->length, 1);
     return;
   }
-  for (uint32_t i = 1; i * step_size < str->length; i++) {
-    str->str_data[i] = str->str_data[i * step_size];
+  uint32_t step_int = bigint_to_uint32(&step_size);
+  for (uint32_t i = 1; i * step_int < str->length; i++) {
+    str->str_data[i] = str->str_data[i * step_int];
   }
-  str->length = (str->length + 1) / step_size;
+  str->length = (str->length + 1) / step_int;
 }
 
 // Splits a string into parts divided by a given seperator string
@@ -208,21 +210,27 @@ Item string_split(String *str, String *sep) {
 
 // Returns an array item consisting of the given string split up into
 // substrings of a given length
-Item string_split_into_groups(String *str, int64_t group_size) {
+Item string_split_into_groups(String *str, Bigint group_size) {
   Item array = make_array();
   Item cur_string = empty_string();
 
-  if (group_size < 0) {
+  if (group_size.is_negative) {
     string_reverse(str);
-    group_size *= -1;
+    group_size.is_negative = false;
   }
-  else if (group_size == 0) {
+  else if (bigint_is_zero(&group_size)) {
     error("Cannot split string into groups of size 0!");
   }
 
+  uint32_t group_len;
+  if (bigint_fits_in_uint32(&group_size))
+    group_len = bigint_to_uint32(&group_size);
+  else
+    group_len = UINT32_MAX;
+
   for (uint32_t i = 0; i < str->length; i++) {
     string_add_char(&cur_string.str_val, str->str_data[i]);
-    if (cur_string.str_val.length == group_size) {
+    if (cur_string.str_val.length == group_len) {
       array_push(&array.arr_val, cur_string);
       cur_string = empty_string();
     }
@@ -236,17 +244,25 @@ Item string_split_into_groups(String *str, int64_t group_size) {
 }
 
 // Remove a certain number of characters from the start of a string
-void string_remove_from_front(String *str, int64_t to_remove) {
-  if (str->length - to_remove <= 0) {
+void string_remove_from_front(String *str, Bigint to_remove) {
+  if (to_remove.is_negative || bigint_is_zero(&to_remove))
+    return;
+
+  if (!bigint_fits_in_uint32(&to_remove)) {
     str->length = 0;
     return;
   }
-  else {
-    str->length -= to_remove;
+
+  uint32_t to_remove_int = bigint_to_uint32(&to_remove);
+  if (to_remove_int > str->length) {
+    str->length = 0;
+    return;
   }
+  
+  str->length -= to_remove_int;
 
   for (uint32_t i = 0; i < str->length; i++) {
-    str->str_data[i] = str->str_data[i + to_remove];
+    str->str_data[i] = str->str_data[i + to_remove_int];
   }
 }
 
@@ -270,13 +286,15 @@ void map_string(String *str, Item *block) {
     for (uint32_t j = start_stack_size; j < stack.length; j++) {
       Item new_item = stack.items[j];
       if (new_item.type == TYPE_INTEGER) {
-        string_add_char(&mapped_str.str_val, new_item.int_val);
+        string_add_char(&mapped_str.str_val, new_item.int_val.digits[0] & 255);
       }
       else {
         items_add(&mapped_str, &new_item);
         if (mapped_str.type == TYPE_BLOCK) {
           if (i == 0) {
-            string_remove_from_front(&mapped_str.str_val, 1);
+            Bigint one = bigint_from_int64(1);
+            string_remove_from_front(&mapped_str.str_val, one);
+            free_bigint(&one);
           }
           mapped_str.type = TYPE_STRING;
         }
@@ -331,15 +349,22 @@ void string_sort(String *str) {
 }
 
 // Repeats a string a given number of times
-void string_multiply(String *str, int64_t factor) {
-  if (factor < 0) {
+void string_multiply(String *str, Bigint factor) {
+  if (factor.is_negative) {
     error("Cannot multiply array by a negative argument!");
   }
-  uint32_t new_len = str->length * factor;
+  if (!bigint_fits_in_uint32(&factor)) {
+    error("Factor too large to multiply string by!");
+  }
+  uint32_t to_multiply_by = bigint_to_uint32(&factor);
+  uint64_t new_len = str->length * to_multiply_by;
+  if (new_len >= UINT32_MAX) {
+    error("Factor too large to multiply string by!");
+  }
   string_request_size(str, new_len);
   uint32_t cur_len = str->length;
-  while (factor > 1) {
-    factor -= 1;
+  while (to_multiply_by > 1) {
+    to_multiply_by -= 1;
 
     for (uint32_t i = 0; i < str->length; i++) {
       str->str_data[i + cur_len] = str->str_data[i];
@@ -438,46 +463,6 @@ void string_setwise_xor(String *str, String *to_xor) {
       string_add_char(str, to_xor->str_data[i]);
     }
   }
-}
-
-// Converts an integer to its string representation
-String int_to_string(int64_t int_val) {
-  String str = new_string();
-  bool was_negative = int_val < 0;
-
-  if (int_val < 0)
-    int_val *= -1;
-  else if (int_val == 0)
-    string_add_char(&str, '0');
-
-  while (int_val > 0) {
-    string_add_char(&str, '0' + (int_val % 10));
-    int_val /= 10;
-  }
-
-  if (was_negative)
-    string_add_char(&str, '-');
-  string_reverse(&str);
-
-  return str;
-}
-
-// Converts a string to an integer, assuming it represents an int
-int64_t string_to_int(String *str) {
-  int64_t val = 0;
-  uint32_t cur_pos = 0;
-  bool was_negative = false;
-  if (str->str_data[0] == '-') {
-    was_negative = true;
-    cur_pos++;
-  }
-  while (cur_pos < str->length) {
-    val *= 10;
-    val += str->str_data[cur_pos++] - '0';
-  }
-  if (was_negative)
-    val *= -1;
-  return val;
 }
 
 // Reads the complete contents of a file to a string

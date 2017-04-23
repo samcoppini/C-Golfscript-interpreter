@@ -37,10 +37,16 @@ typedef struct Array {
   uint32_t length, allocated;
 } Array;
 
+typedef struct Bigint {
+  uint64_t *digits;
+  uint32_t length, allocated;
+  bool is_negative;
+} Bigint;
+
 typedef struct Item {
   enum Type type; // The type of the item
   union {
-    int64_t int_val;    // Used for integers
+    Bigint int_val;     // Used for integers
     String str_val;     // Used for strings and blocks
     Array arr_val;      // Used for arrays
     void (*function)(); // Used for builtin functions
@@ -75,7 +81,7 @@ Array new_array();
 void free_array(Array *array);
 Array array_from_string(String *str);
 void array_push(Array *arr, Item item);
-void array_remove_from_front(Array *array, uint32_t to_remove);
+void array_remove_from_front(Array *array, Bigint to_remove);
 int64_t array_find(Array *arr, Item *item);
 void array_reverse(Array *array);
 Item join_array(Array *array, Item *sep);
@@ -84,17 +90,41 @@ void fold_array(Array *array, Item *block);
 void filter_array(Array *array, Item *block);
 void array_remove_empty_strings(Array *array);
 void array_remove_empty_arrays(Array *array);
-void array_multiply(Array *array, int64_t factor);
+void array_multiply(Array *array, Bigint factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_split(Array *array, Array *sep);
-Item array_split_into_groups(Array *array, int64_t group_len);
-void array_step_over(Array *array, int64_t step_size);
+Item array_split_into_groups(Array *array, Bigint group_len);
+void array_step_over(Array *array, Bigint step_size);
 void array_sort(Array *array);
 void array_sort_by_mapping(Array *array, Array *mapped_array);
 void string_sort_by_mapping(String *str, Array *mapped_str);
 void array_and(Array *array, Array *to_and);
 void array_or(Array *array, Array *to_or);
 void array_xor(Array *array, Array *to_xor);
+
+// bigint.c
+Bigint new_bigint();
+Bigint bigint_with_digits(uint32_t num_digits);
+void free_bigint(Bigint *num);
+Bigint bigint_from_int64(int64_t int_val);
+Bigint bigint_from_string(const String *str);
+String bigint_to_string(const Bigint *num);
+bool bigint_fits_in_uint32(const Bigint *num);
+uint32_t bigint_to_uint32(const Bigint *num);
+Bigint copy_bigint(const Bigint *to_copy);
+bool bigint_is_zero(const Bigint *num);
+void bigint_increment(Bigint *num);
+void bigint_decrement(Bigint *num);
+int bigint_compare(const Bigint *a, const Bigint *b);
+Bigint bigint_or(const Bigint *a, const Bigint *b);
+Bigint bigint_and(const Bigint *a, const Bigint *b);
+Bigint bigint_xor(const Bigint *a, const Bigint *b);
+Bigint bigint_add(const Bigint *a, const Bigint *b);
+Bigint bigint_subtract(const Bigint *a, const Bigint *b);
+Bigint bigint_multiply(const Bigint *a, const Bigint *b);
+void bigint_divmod(const Bigint *a, const Bigint *b, Bigint *quotient_result,
+                   Bigint *remainder_result);
+Bigint bigint_exponent(const Bigint *base, const Bigint *exponent);
 
 // builtin.c
 void builtin_abs();
@@ -137,6 +167,7 @@ noreturn void error(const char *msg, ...);
 
 // item.c
 Item make_integer(int64_t int_val);
+Item make_integer_from_bigint(Bigint *bigint);
 Item make_string(String *str_val);
 Item empty_string();
 Item make_block(String str_val);
@@ -160,7 +191,7 @@ void end_interpreter();
 void stack_push(Item item);
 Item stack_pop();
 void execute_string(String *str);
-void repeat_block(Item *block, int64_t times);
+void repeat_block(Item *block, Bigint times);
 void execute_item(Item *item);
 
 // map.c
@@ -172,7 +203,7 @@ Item *map_get(Map *map, String *key);
 
 // random.c
 void init_rng();
-int64_t get_randint(int64_t max_val);
+Bigint get_randint(Bigint max_val);
 
 // set.c
 Set new_set();
@@ -191,7 +222,7 @@ void string_reverse(String *str);
 void string_add_char(String *str, char c);
 void string_add_str(String *str, String *to_append);
 void string_add_c_str(String *str, char *to_append);
-void string_remove_from_front(String *str, int64_t to_remove);
+void string_remove_from_front(String *str, Bigint to_remove);
 Item string_join(String *str, String *sep);
 void map_string(String *str, Item *block);
 void fold_string(String *str, Item *block);
@@ -199,16 +230,14 @@ void filter_string(String *str, Item *block);
 int64_t string_find_char(String *str, char c);
 int64_t string_find_str(String *str, String *to_find);
 Item string_split(String *str, String *sep);
-Item string_split_into_groups(String *str, int64_t group_len);
-void string_step_over(String *str, int64_t step_size);
+Item string_split_into_groups(String *str, Bigint group_len);
+void string_step_over(String *str, Bigint step_size);
 void string_sort(String *str);
-void string_multiply(String *str, int64_t factor);
+void string_multiply(String *str, Bigint factor);
 void string_subtract(String *str, String *to_subtract);
 void string_setwise_and(String *str, String *to_and);
 void string_setwise_or(String *str, String *to_or);
 void string_setwise_xor(String *str, String *to_xor);
-String int_to_string(int64_t int_val);
-int64_t string_to_int(String *str);
 String read_file_to_string(FILE *file);
 
 #endif

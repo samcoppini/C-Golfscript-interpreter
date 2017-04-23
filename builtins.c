@@ -7,8 +7,7 @@
 void builtin_abs() {
   Item item = stack_pop();
   if (item.type == TYPE_INTEGER) {
-    if (item.int_val < 0)
-      item.int_val *= -1;
+    item.int_val.is_negative = false;
     stack_push(item);
   }
   else {
@@ -22,17 +21,18 @@ void builtin_ampersand() {
 
   coerce_types(&item1, &item2);
   if (item1.type == TYPE_INTEGER) {
-    item2.int_val &= item1.int_val;
+    Bigint and_val = bigint_and(&item1.int_val, &item2.int_val);
+    free_bigint(&item2.int_val);
+    item2.int_val = and_val;
   }
   else if (item1.type == TYPE_BLOCK || item1.type == TYPE_STRING) {
     string_setwise_and(&item2.str_val, &item1.str_val);
-    free_item(&item1);
   }
   else if (item1.type == TYPE_ARRAY) {
     array_and(&item2.arr_val, &item1.arr_val);
-    free_item(&item1);
   }
 
+  free_item(&item1);
   stack_push(item2);
 }
 
@@ -44,8 +44,11 @@ void builtin_asterisk() {
     swap_items(&item1, &item2);
 
   if (item2.type == TYPE_INTEGER) {
-    if (item1.type == TYPE_INTEGER)
-      item1.int_val *= item2.int_val;
+    if (item1.type == TYPE_INTEGER) {
+      Bigint product = bigint_multiply(&item1.int_val, &item2.int_val);
+      free_bigint(&item1.int_val);
+      item1.int_val = product;
+    }
     else if (item1.type == TYPE_ARRAY)
       array_multiply(&item1.arr_val, item2.int_val);
     else if (item1.type == TYPE_STRING)
@@ -55,6 +58,7 @@ void builtin_asterisk() {
       free_item(&item1);
       return;
     }
+    free_item(&item2);
     stack_push(item1);
     return;
   }
@@ -111,17 +115,18 @@ void builtin_bar() {
   coerce_types(&item1, &item2);
 
   if (item1.type == TYPE_INTEGER) {
-    item2.int_val |= item1.int_val;
+    Bigint or_val = bigint_or(&item1.int_val, &item2.int_val);
+    free_bigint(&item2.int_val);
+    item2.int_val = or_val;
   }
   else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
     string_setwise_or(&item2.str_val, &item1.str_val);
-    free(item1.str_val.str_data);
   }
   else if (item1.type == TYPE_ARRAY) {
     array_or(&item2.arr_val, &item1.arr_val);
-    free_item(&item1);
   }
 
+  free_item(&item1);
   stack_push(item2);
 }
 
@@ -130,42 +135,67 @@ void builtin_base() {
   Item item2 = stack_pop();
 
   if (item1.type == TYPE_INTEGER) {
+    if (bigint_is_zero(&item1.int_val)) {
+      error("Cannot use a base of 0!");
+    }
     if (item2.type == TYPE_INTEGER) {
       Item digits = make_array();
-      if (item2.int_val == 0) {
+      if (bigint_is_zero(&item2.int_val)) {
         array_push(&digits.arr_val, make_integer(0));
       }
-      else if (item2.int_val < 0) {
-        item2.int_val *= -1;
-      }
-      while (item2.int_val > 0) {
-        array_push(&digits.arr_val, make_integer(item2.int_val % item1.int_val));
-        item2.int_val /= item1.int_val;
+      item2.int_val.is_negative = false;
+      while (!bigint_is_zero(&item2.int_val)) {
+        Bigint quotient, remainder;
+        bigint_divmod(&item2.int_val, &item1.int_val, &quotient, &remainder);
+        array_push(&digits.arr_val, make_integer_from_bigint(&remainder));
+        free_bigint(&item2.int_val);
+        free_bigint(&remainder);
+        item2.int_val = quotient;
       }
       array_reverse(&digits.arr_val);
       stack_push(digits);
     }
     else if (item2.type == TYPE_ARRAY) {
-      int64_t base_val = 1;
-      int64_t result = 0;
+      Bigint base_val = bigint_from_int64(1);
+      Bigint result = new_bigint();
       for (int32_t i = item2.arr_val.length - 1; i >= 0; i--) {
         if (item2.arr_val.items[i].type != TYPE_INTEGER) {
           error("Cannot perform base operation on array with non-integers!");
         }
-        result += item2.arr_val.items[i].int_val * base_val;
-        base_val *= item1.int_val;
+        Bigint product = bigint_multiply(&base_val,
+                                         &item2.arr_val.items[i].int_val);
+        Bigint temp_bigint = result;
+        result = bigint_add(&result, &product);
+        free_bigint(&temp_bigint);
+        temp_bigint = base_val;
+        base_val = bigint_multiply(&item1.int_val, &base_val);
+        free_bigint(&temp_bigint);
       }
-      stack_push(make_integer(result));
+      stack_push(make_integer_from_bigint(&result));
+      free_bigint(&result);
+      free_bigint(&base_val);
     }
     else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
-      int64_t base_val = 1;
-      int64_t result = 0;
+      Bigint base_val = bigint_from_int64(1);
+      Bigint result = new_bigint();
       for (int32_t i = item2.str_val.length - 1; i >= 0; i--) {
-        result += item2.str_val.str_data[i] * base_val;
-        base_val *= item1.int_val;
+        Bigint temp_char = bigint_from_int64(item2.str_val.str_data[i]);
+        Bigint product = bigint_multiply(&temp_char, &base_val);
+        Bigint temp_result = result;
+        result = bigint_add(&result, &product);
+        free_bigint(&temp_char);
+        free_bigint(&product);
+        free_bigint(&temp_result);
+        Bigint temp_base = base_val;
+        base_val = bigint_multiply(&base_val, &temp_base);
+        free_bigint(&temp_base);
       }
-      stack_push(make_integer(result));
+      stack_push(make_integer_from_bigint(&result));
+      free_bigint(&result);
+      free_bigint(&base_val);
     }
+    free_item(&item2);
+    free_item(&item1);
   }
   else {
     error("Invalid arguments for base operation!");
@@ -178,17 +208,18 @@ void builtin_caret() {
 
   coerce_types(&item1, &item2);
   if (item1.type == TYPE_INTEGER) {
-    item2.int_val ^= item1.int_val;
+    Bigint xor_val = bigint_xor(&item1.int_val, &item2.int_val);
+    free_bigint(&item2.int_val);
+    item2.int_val = xor_val;
   }
   else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
     string_setwise_xor(&item2.str_val, &item1.str_val);
-    free(item1.str_val.str_data);
   }
   else if (item1.type == TYPE_ARRAY) {
     array_xor(&item2.arr_val, &item1.arr_val);
-    free_item(&item1);
   }
 
+  free_item(&item1);
   stack_push(item2);
 }
 
@@ -196,9 +227,14 @@ void builtin_comma() {
   Item item = stack_pop();
   if (item.type == TYPE_INTEGER) {
     Item array = make_array();
-    for (int64_t i = 0; i < item.int_val; i++) {
-      array_push(&array.arr_val, make_integer(i));
+    Bigint cur_val;
+    for (cur_val = new_bigint();
+         bigint_compare(&cur_val, &item.int_val) < 0;
+         bigint_increment(&cur_val))
+    {
+      array_push(&array.arr_val, make_integer_from_bigint(&cur_val));
     }
+    free_bigint(&cur_val);
     stack_push(array);
   }
   else if (item.type == TYPE_STRING) {
@@ -242,13 +278,20 @@ void builtin_dollar_sign() {
   Item item = stack_pop();
 
   if (item.type == TYPE_INTEGER) {
-    if (item.int_val < 0) {
-      item.int_val = -item.int_val - 1;
-      if (item.int_val < stack.length)
-        stack_push(make_copy(&stack.items[item.int_val]));
+    if (item.int_val.is_negative) {
+      item.int_val.is_negative = false;
+      bigint_decrement(&item.int_val);
+      if (bigint_fits_in_uint32(&item.int_val) &&
+          bigint_to_uint32(&item.int_val) < stack.length)
+      {
+        stack_push(make_copy(&stack.items[bigint_to_uint32(&item.int_val)]));
+      }
     }
-    else if (item.int_val < stack.length) {
-      stack_push(make_copy(&stack.items[stack.length - item.int_val - 1]));
+    else if (bigint_fits_in_uint32(&item.int_val) &&
+             bigint_to_uint32(&item.int_val) < stack.length)
+    {
+      uint32_t index = stack.length - bigint_to_uint32(&item.int_val) - 1;
+      stack_push(make_copy(&stack.items[index]));
     }
   }
   else if (item.type == TYPE_STRING) {
@@ -301,24 +344,38 @@ void builtin_equal() {
   if (item2.type == TYPE_INTEGER) {
     if (item1.type == TYPE_INTEGER) {
       stack_push(make_integer(items_equal(&item1, &item2)));
+      free_item(&item1);
+      free_item(&item2);
     }
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
-      if (item2.int_val < 0) {
-        item2.int_val = item1.str_val.length + item2.int_val;
-      }
-      if (item2.int_val < item1.str_val.length && item2.int_val >= 0) {
-        stack_push(make_integer(item1.str_val.str_data[item2.int_val]));
+      if (bigint_fits_in_uint32(&item2.int_val)) {
+        bool was_negative = item2.int_val.is_negative;
+        item2.int_val.is_negative = false;
+        int64_t index = bigint_to_uint32(&item2.int_val);
+        if (was_negative) {
+          index = item1.str_val.length - index;
+        }
+        if (index < item1.str_val.length && index >= 0) {
+          stack_push(make_integer(item1.str_val.str_data[index]));
+        }
       }
       free_item(&item1);
+      free_item(&item2);
     }
     else if (item1.type == TYPE_ARRAY) {
-      if (item2.int_val < 0) {
-        item2.int_val = item1.arr_val.length + item2.int_val;
-      }
-      if (item2.int_val < item1.arr_val.length && item2.int_val >= 0) {
-        stack_push(make_copy(&item1.arr_val.items[item2.int_val]));
+      if (bigint_fits_in_uint32(&item2.int_val)) {
+        bool was_negative = item2.int_val.is_negative;
+        item2.int_val.is_negative = false;
+        int64_t index = bigint_to_uint32(&item2.int_val);
+        if (was_negative) {
+          index = item1.arr_val.length - index;
+        }
+        if (index < item1.arr_val.length && index >= 0) {
+          stack_push(make_copy(&item1.arr_val.items[index]));
+        }
       }
       free_item(&item1);
+      free_item(&item2);
     }
   }
   else {
@@ -344,24 +401,30 @@ void builtin_greater_than() {
 
   if (item2.type == TYPE_INTEGER) {
     if (item1.type == TYPE_INTEGER) {
-      stack_push(make_integer(item2.int_val > item1.int_val));
+      stack_push(make_integer(item_compare(&item1, &item2) < 0));
+      free_item(&item1);
+      free_item(&item2);
     }
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
-      if (item2.int_val < 0) {
-        item2.int_val = item1.str_val.length + item2.int_val;
-        if (item2.int_val < 0)
-          item2.int_val = 0;
+      if (item2.int_val.is_negative) {
+        Bigint str_len = bigint_from_int64(item1.str_val.length);
+        Bigint difference = bigint_add(&item2.int_val, &str_len);
+        free_bigint(&item2.int_val);
+        free_bigint(&str_len);
+        item2.int_val = difference;
       }
       string_remove_from_front(&item1.str_val, item2.int_val);
       stack_push(item1);
     }
     else if (item1.type == TYPE_ARRAY) {
-      if (item2.int_val < 0) {
-        item2.int_val = item1.arr_val.length + item2.int_val;
+      if (item2.int_val.is_negative) {
+        Bigint arr_len = bigint_from_int64(item1.arr_val.length);
+        Bigint difference = bigint_add(&item2.int_val, &arr_len);
+        free_bigint(&item2.int_val);
+        free_bigint(&arr_len);
+        item2.int_val = difference;
       }
-      if (item2.int_val > 0) {
-        array_remove_from_front(&item1.arr_val, item2.int_val);
-      }
+      array_remove_from_front(&item1.arr_val, item2.int_val);
       stack_push(item1);
     }
   }
@@ -391,25 +454,6 @@ void builtin_lbracket() {
   array_push(&bracket_stack, make_integer(stack.length));
 }
 
-void builtin_minus() {
-  Item item1 = stack_pop();
-  Item item2 = stack_pop();
-
-  coerce_types(&item1, &item2);
-
-  if (item2.type == TYPE_INTEGER) {
-    item2.int_val -= item1.int_val;
-  }
-  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
-    string_subtract(&item2.str_val, &item1.str_val);
-    free(item1.str_val.str_data);
-  }
-  else if (item2.type == TYPE_ARRAY) {
-    array_subtract(&item2.arr_val, &item1.arr_val);
-    free_item(&item1);
-  }
-  stack_push(item2);
-}
 
 void builtin_less_than() {
   Item item1 = stack_pop();
@@ -421,31 +465,54 @@ void builtin_less_than() {
 
   if (item2.type == TYPE_INTEGER) {
     if (item1.type == TYPE_INTEGER) {
-      stack_push(make_integer(item2.int_val < item1.int_val));
+      stack_push(make_integer(item_compare(&item1, &item2) > 0));
+      free_item(&item1);
+      free_item(&item2);
     }
     else if (item1.type == TYPE_BLOCK || item1.type == TYPE_STRING) {
-      if (item2.int_val < 0) {
-        item2.int_val *= -1;
-        if (item2.int_val > item1.str_val.length)
+      if (item2.int_val.is_negative) {
+        item2.int_val.is_negative = false;
+        if (!bigint_fits_in_uint32(&item2.int_val))
           item1.str_val.length = 0;
-        else
-          item1.str_val.length -= item2.int_val;
+        else {
+          uint32_t to_subtract = bigint_to_uint32(&item2.int_val);
+          if (to_subtract > item1.str_val.length)
+            item1.str_val.length = 0;
+          else
+            item1.str_val.length -= to_subtract;
+        }
       }
       else {
-        item1.str_val.length = min(item2.int_val, item1.str_val.length);
+        if (bigint_fits_in_uint32(&item2.int_val)) {
+          uint32_t new_len = bigint_to_uint32(&item2.int_val);
+          item1.str_val.length = min(new_len, item1.str_val.length);
+        }
       }
       stack_push(item1);
     }
     else if (item1.type == TYPE_ARRAY) {
-      int64_t to_remove;
-      if (item2.int_val < 0)
-        to_remove = min(-item2.int_val, item1.arr_val.length);
-      else
-        to_remove = item1.arr_val.length - item2.int_val;
+      uint32_t to_remove = 0;
+      if (item2.int_val.is_negative) {
+        item2.int_val.is_negative = false;
+        if (bigint_fits_in_uint32(&item2.int_val)) {
+          to_remove = bigint_to_uint32(&item2.int_val);
+          to_remove = min(to_remove, item1.arr_val.length);
+        }
+        else {
+          to_remove = item1.arr_val.length;
+        }
+      }
+      else {
+        if (bigint_fits_in_uint32(&item2.int_val)) {
+          uint32_t index = bigint_to_uint32(&item2.int_val);
+          if (index < item1.arr_val.length)
+            to_remove = item1.arr_val.length - index;
+        }
+      }
       for (int64_t i = 1; i <= to_remove; i++) {
         free_item(&item1.arr_val.items[item1.arr_val.length - i]);
       }
-      item1.arr_val.length -= max(0, to_remove);
+      item1.arr_val.length -= to_remove;
       stack_push(item1);
     }
   }
@@ -456,11 +523,34 @@ void builtin_less_than() {
   }
 }
 
+void builtin_minus() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  coerce_types(&item1, &item2);
+
+  if (item2.type == TYPE_INTEGER) {
+    Bigint difference = bigint_subtract(&item2.int_val, &item1.int_val);
+    free_bigint(&item2.int_val);
+    item2.int_val = difference;
+  }
+  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
+    string_subtract(&item2.str_val, &item1.str_val);
+    free(item1.str_val.str_data);
+  }
+  else if (item2.type == TYPE_ARRAY) {
+    array_subtract(&item2.arr_val, &item1.arr_val);
+    free_item(&item1);
+  }
+  free_item(&item1);
+  stack_push(item2);
+}
+
 void builtin_lparen() {
   Item item = stack_pop();
 
   if (item.type == TYPE_INTEGER) {
-    item.int_val--;
+    bigint_decrement(&item.int_val);
     stack_push(item);
   }
   else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
@@ -499,8 +589,13 @@ void builtin_percent() {
   }
 
   if (item2.type == TYPE_INTEGER) {
-    if (item1.type == TYPE_INTEGER)
-      item1.int_val = item2.int_val % item1.int_val;
+    if (item1.type == TYPE_INTEGER) {
+      Bigint remainder;
+      bigint_divmod(&item2.int_val, &item1.int_val, NULL, &remainder);
+      free_bigint(&item1.int_val);
+      item1.int_val = remainder;
+      free_item(&item2);
+    }
     else if (item1.type == TYPE_ARRAY)
       array_step_over(&item1.arr_val, item2.int_val);
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK)
@@ -572,18 +667,14 @@ void builtin_question() {
     swap_items(&item1, &item2);
 
   if (item1.type == TYPE_INTEGER) {
-    if (item1.int_val < 0) {
+    if (bigint_is_zero(&item1.int_val)) {
       error("Can't raise an integer to a negative power!");
     }
-    int64_t base = item2.int_val;
-    item2.int_val = 1;
-    while (item1.int_val) {
-      if (item1.int_val & 1)
-        item2.int_val *= base;
-      item1.int_val >>= 1;
-      base *= base;
-    }
+    Bigint power = bigint_exponent(&item2.int_val, &item1.int_val);
+    free_bigint(&item2.int_val);
+    item2.int_val = power;
     stack_push(item2);
+    free_item(&item1);
   }
   else if (item1.type == TYPE_ARRAY) {
     if (item2.type == TYPE_ARRAY) {
@@ -596,7 +687,7 @@ void builtin_question() {
   else if (item1.type == TYPE_STRING) {
     if (item2.type == TYPE_INTEGER) {
       stack_push(make_integer(string_find_char(&item1.str_val,
-                                               item2.int_val)));
+                                               item2.int_val.digits[0] & 255)));
       free_item(&item2);
     }
     else if (item2.type == TYPE_ARRAY) {
@@ -669,7 +760,7 @@ void builtin_rbracket() {
   }
   else {
     bracket_stack.length--;
-    first_item = bracket_stack.items[bracket_stack.length].int_val;
+    first_item = bigint_to_uint32(&bracket_stack.items[bracket_stack.length].int_val);
   }
   Item array = make_array();
   for (uint32_t i = first_item; i < stack.length; i++) {
@@ -683,7 +774,7 @@ void builtin_rparen() {
   Item item = stack_pop();
 
   if (item.type == TYPE_INTEGER) {
-    item.int_val++;
+    bigint_increment(&item.int_val);
     stack_push(item);
   }
   else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
@@ -724,17 +815,22 @@ void builtin_slash() {
 
   if (item1.type == TYPE_INTEGER) {
     if (item2.type == TYPE_INTEGER) {
-      if (item1.int_val == 0)
+      if (bigint_is_zero(&item1.int_val)) {
         error("Attempted to divide by zero!");
-      item2.int_val /= item1.int_val;
+      }
+      Bigint quotient;
+      bigint_divmod(&item2.int_val, &item1.int_val, &quotient, NULL);
+      free_bigint(&item2.int_val);
+      item2.int_val = quotient;
       stack_push(item2);
+      free_item(&item1);
     }
   }
   else if (item1.type == TYPE_ARRAY) {
     if (item2.type == TYPE_INTEGER) {
       Item split_array = array_split_into_groups(&item1.arr_val, item2.int_val);
       stack_push(split_array);
-      free(item1.arr_val.items);
+      free_item(&item2);
     }
     else if (item1.type == TYPE_ARRAY) {
       array_split(&item2.arr_val, &item1.arr_val);
@@ -746,6 +842,7 @@ void builtin_slash() {
     if (item2.type == TYPE_INTEGER) {
       Item split_str = string_split_into_groups(&item1.str_val, item2.int_val);
       stack_push(split_str);
+      free_item(&item1);
       free_item(&item2);
     }
     else if (item2.type == TYPE_ARRAY) {
@@ -812,12 +909,13 @@ void builtin_slash() {
 void builtin_tilde() {
   Item item = stack_pop();
   if (item.type == TYPE_INTEGER) {
-    item.int_val = ~item.int_val;
+    item.int_val.is_negative = !item.int_val.is_negative;
+    bigint_decrement(&item.int_val);
     stack_push(item);
   }
   else if (item.type == TYPE_STRING || item.type == TYPE_BLOCK) {
     execute_string(&item.str_val);
-    free(item.str_val.str_data);
+    free_item(&item);
   }
   else if (item.type == TYPE_ARRAY) {
     for (uint32_t i = 0; i < item.arr_val.length; i++) {
@@ -891,7 +989,7 @@ void builtin_zip() {
             error("Invalid array for zip!");
           }
           string_add_char(&zipped_array.arr_val.items[j].str_val,
-                          cur_item.arr_val.items[j].int_val);
+                          cur_item.arr_val.items[j].int_val.digits[0] & 255);
         }
         else if (zipped_array.arr_val.items[j].type == TYPE_ARRAY) {
           array_push(&zipped_array.arr_val.items[j].arr_val,

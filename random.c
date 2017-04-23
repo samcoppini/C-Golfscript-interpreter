@@ -23,11 +23,18 @@ uint64_t get_random() {
   return rng_state[pos] * 0x106689d45497fdb5;
 }
 
-int64_t get_randint(int64_t max_val) {
-  if (max_val < 1) {
-    return 0;
+Bigint get_randint(Bigint max_val) {
+  if (bigint_is_zero(&max_val)) {
+    return new_bigint();
   }
   else {
-    return get_random() % max_val;
+    Bigint rand_num = bigint_with_digits(max_val.length);
+    for (uint32_t i = 0; i < max_val.length; i++) {
+      if (i + 1 < max_val.length)
+        rand_num.digits[i] = get_random();
+      else
+        rand_num.digits[i] = get_random() % max_val.digits[i];
+    }
+    return rand_num;
   }
 }

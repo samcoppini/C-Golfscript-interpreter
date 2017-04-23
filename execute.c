@@ -116,8 +116,8 @@ Item stack_pop() {
   // If the stack's size decreases below what they were when a opening
   // bracket was encountered, we have to move the bracket accordingly
   for (uint32_t i = 0; i < bracket_stack.length; i++) {
-    if (stack.length < bracket_stack.items[i].int_val)
-      bracket_stack.items[i].int_val = stack.length;
+    if (stack.length < bigint_to_uint32(&bracket_stack.items[i].int_val))
+      bigint_decrement(&bracket_stack.items[i].int_val);
   }
 
   return stack.items[stack.length];
@@ -305,6 +305,7 @@ String next_token(String *str, uint32_t *code_pos) {
 }
 
 void execute_string(String *str) {
+  Bigint one = bigint_from_int64(1);
   uint32_t code_pos = 0;
 
   while (code_pos < str->length) {
@@ -327,23 +328,29 @@ void execute_string(String *str) {
     else if (isdigit(tok.str_data[0]) ||
              (tok.str_data[0] == '-' && tok.length > 1))
     {
-      stack_push(make_integer(string_to_int(&tok)));
+      Item item = {TYPE_INTEGER, .int_val = bigint_from_string(&tok)};
+      stack_push(item);
     }
     else if (tok.str_data[0] == '"' || tok.str_data[0] == '\'') {
-      string_remove_from_front(&tok, 1);
+      string_remove_from_front(&tok, one);
       stack_push(make_string(&tok));
     }
     else if (tok.str_data[0] == '{') {
-      string_remove_from_front(&tok, 1);
+      string_remove_from_front(&tok, one);
       stack_push(make_block(copy_string(&tok)));
     }
     free(tok.str_data);
   }
+
+  free_bigint(&one);
 }
 
-void repeat_block(Item *block, int64_t times) {
-  while (times-- > 0) {
-    execute_string(&block->str_val);
+void repeat_block(Item *block, Bigint times) {
+  if (!times.is_negative) {
+    while (!bigint_is_zero(&times)) {
+      execute_string(&block->str_val);
+      bigint_decrement(&times);
+    }
   }
 }
 

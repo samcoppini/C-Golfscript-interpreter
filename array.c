@@ -43,19 +43,24 @@ void array_push(Array *arr, Item item) {
 }
 
 // Removes a number of elements from the array's front
-void array_remove_from_front(Array *array, uint32_t to_remove) {
-  for (uint32_t i = 0; i < to_remove && i < array->length; i++) {
+void array_remove_from_front(Array *array, Bigint to_remove) {
+  if (to_remove.is_negative || bigint_is_zero(&to_remove))
+    return;
+
+  uint32_t to_remove_int;
+  if (!bigint_fits_in_uint32(&to_remove))
+    to_remove_int = min(UINT32_MAX, array->length);
+  else
+    to_remove_int = min(bigint_to_uint32(&to_remove), array->length);
+
+  for (uint32_t i = 0; i < to_remove_int; i++) {
     free_item(&array->items[i]);
   }
-  if (to_remove >= array->length) {
-    array->length = 0;
-    return;
-  }
-  else {
-    array->length -= to_remove;
-  }
+
+  array->length -= to_remove_int;
+
   for (uint32_t i = 0; i < array->length; i++) {
-    array->items[i] = array->items[i + to_remove];
+    array->items[i] = array->items[i + to_remove_int];
   }
 }
 
@@ -112,7 +117,7 @@ void map_array(Array *array, Item *block) {
     }
     stack.length = min(stack.length, start_stack_size);
   }
-  free_array(array);
+  free(array->items);
   *array = mapped_array;
 }
 
@@ -178,11 +183,18 @@ void array_remove_empty_arrays(Array *array) {
   array->length -= removed_elements;
 }
 
-void array_multiply(Array *array, int64_t factor) {
-  if (factor < 0) {
+void array_multiply(Array *array, Bigint factor) {
+  if (factor.is_negative) {
     error("Cannot multiply array by a negative argument!");
   }
-  uint32_t new_len = array->length * factor;
+  if (!bigint_fits_in_uint32(&factor)) {
+    error("Factor too large to multiply array by!");
+  }
+  uint32_t to_multiply_by = bigint_to_uint32(&factor);
+  uint64_t new_len = array->length * to_multiply_by;
+  if (new_len > UINT32_MAX) {
+    error("Factor too large to multiply array by!");
+  }
   if (new_len > array->allocated) {
     while (new_len > array->allocated) {
       array->allocated <<= 1;
@@ -193,7 +205,7 @@ void array_multiply(Array *array, int64_t factor) {
     }
   }
   uint32_t cur_len = array->length;
-  while (--factor > 0) {
+  while (--to_multiply_by > 0) {
     for (uint32_t i = 0; i < array->length; i++) {
       array->items[i + cur_len] = make_copy(&array->items[i]);
     }
@@ -256,19 +268,27 @@ void array_split(Array *array, Array *sep) {
   *array = split_array;
 }
 
-Item array_split_into_groups(Array *array, int64_t group_len) {
+Item array_split_into_groups(Array *array, Bigint group_len) {
   Item split_array = make_array();
   Item cur_array = make_array();
-  if (group_len < 0) {
+
+  if (group_len.is_negative) {
     array_reverse(array);
-    group_len *= -1;
+    group_len.is_negative = false;
   }
-  else if (group_len == 0) {
+  else if (bigint_is_zero(&group_len)) {
     error("Cannot split into groups of size 0!");
   }
+
+  uint32_t group_size;
+  if (!bigint_fits_in_uint32(&group_len))
+    group_size = UINT32_MAX;
+  else
+    group_size = bigint_to_uint32(&group_len);
+
   for (uint32_t i = 0; i < array->length; i++) {
     array_push(&cur_array.arr_val, array->items[i]);
-    if (cur_array.arr_val.length == group_len) {
+    if (cur_array.arr_val.length == group_size) {
       array_push(&split_array.arr_val, cur_array);
       cur_array = make_array();
     }
@@ -282,28 +302,32 @@ Item array_split_into_groups(Array *array, int64_t group_len) {
   return split_array;
 }
 
-void array_step_over(Array *array, int64_t step_size) {
-  if (step_size == 0) {
+void array_step_over(Array *array, Bigint step_size) {
+  if (bigint_is_zero(&step_size)) {
     error("Cannot select elements with 0 step size!");
   }
-  else if (step_size < 0) {
+  else if (step_size.is_negative) {
     array_reverse(array);
-    step_size *= -1;
+    step_size.is_negative = false;
   }
-  if (step_size == 1 || array->length == 0) {
-    return;
+  uint32_t step_len;
+  if (!bigint_fits_in_uint32(&step_size)) {
+    step_len = UINT32_MAX;
+  }
+  else {
+    step_len = bigint_to_uint32(&step_size);
   }
 
   for (uint32_t i = 1; i < array->length; i++) {
-    if (i % step_size) {
+    if (i % step_len) {
       free_item(&array->items[i]);
     }
     else {
-      array->items[i / step_size] = array->items[i];
+      array->items[i / step_len] = array->items[i];
     }
   }
 
-  array->length = ((array->length - 1) / step_size) + 1;
+  array->length = ((array->length - 1) / step_len) + 1;
 }
 
 int *get_sorted_indexes(Array *array, uint32_t start, uint32_t end) {
