@@ -46,20 +46,6 @@ void free_map(Map *map) {
   free(map->items);
 }
 
-// Returns whether the map has a given key
-bool map_has(Map *map, String *key) {
-  uint32_t slot = get_slot(map, key);
-  while (map->keys[slot] != NULL) {
-    if (string_compare(map->keys[slot], key) == 0)
-      return true;
-
-    slot++;
-    if (slot == map->allocated)
-      slot = 0;
-  }
-  return false;
-}
-
 // Doubles the size of a map, rehashing all the keys
 static void map_increase_size(Map *map) {
   String **old_keys = map->keys;

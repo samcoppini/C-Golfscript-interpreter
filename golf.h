@@ -197,7 +197,6 @@ void execute_item(Item *item);
 // map.c
 Map new_map();
 void free_map(Map *map);
-bool map_has(Map *map, String *key);
 void map_set(Map *map, String key, Item item);
 Item *map_get(Map *map, String *key);
 
