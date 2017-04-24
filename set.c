@@ -223,7 +223,7 @@ static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
       // current node, and delete the node that we copied
       TreeNode *to_replace = get_largest_node(cur_node->left);
       free_item(&cur_node->item);
-      cur_node->item = to_replace->item;
+      cur_node->item = make_copy(&to_replace->item);
       cur_node->left = delete_node(cur_node->left, &to_replace->item);
     }
     else if (cur_node->left != NULL || cur_node->right != NULL) {
