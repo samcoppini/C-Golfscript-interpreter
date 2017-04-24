@@ -341,16 +341,19 @@ static Bigint bigint_do_add(const Bigint *a, const Bigint *b) {
 			bigint_add_digit(&result);
 		}
 
+		bool overflowed = false;
+
 		if (a->length > digit)
 			result.digits[digit] += a->digits[digit];
 
-		if (b->length > digit)
+		if (b->length > digit) {
 			result.digits[digit] += b->digits[digit];
-
-		bool overflowed = (result.digits[digit] < a->digits[digit]);
+			overflowed = (result.digits[digit] < b->digits[digit]);
+		}
 
 		if (carry) {
 			result.digits[digit]++;
+			overflowed |= (result.digits[digit] == 0);
 		}
 
 		carry = overflowed;
