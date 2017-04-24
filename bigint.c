@@ -171,9 +171,9 @@ static void bigint_bitshift_left(Bigint *num) {
 	uint64_t carry = 0;
 	for (uint32_t i = 0; i < num->length; i++) {
 		uint64_t old_carry = carry;
-		carry = num->digits[i] & (1ULL << 63);
+		carry = num->digits[i] >> 63;
 		num->digits[i] <<= 1;
-		num->digits[i] |= old_carry >> 63;
+		num->digits[i] |= old_carry;
 	}
 	bigint_remove_leading_zeros(num);
 }
