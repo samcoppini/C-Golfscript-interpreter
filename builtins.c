@@ -657,7 +657,7 @@ void builtin_question() {
     swap_items(&item1, &item2);
 
   if (item1.type == TYPE_INTEGER) {
-    if (bigint_is_zero(&item1.int_val)) {
+    if (item1.int_val.is_negative) {
       error("Can't raise an integer to a negative power!");
     }
     Bigint power = bigint_exponent(&item2.int_val, &item1.int_val);
