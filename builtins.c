@@ -164,10 +164,8 @@ void builtin_base() {
         }
         Bigint product = bigint_multiply(&base_val,
                                          &item2.arr_val.items[i].int_val);
-        Bigint temp_bigint = result;
-        result = bigint_add(&result, &product);
-        free_bigint(&temp_bigint);
-        temp_bigint = base_val;
+        bigint_add(&result, &product);
+        Bigint temp_bigint = base_val;
         base_val = bigint_multiply(&item1.int_val, &base_val);
         free_bigint(&temp_bigint);
       }
@@ -181,11 +179,9 @@ void builtin_base() {
       for (int32_t i = item2.str_val.length - 1; i >= 0; i--) {
         Bigint temp_char = bigint_from_int64(item2.str_val.str_data[i]);
         Bigint product = bigint_multiply(&temp_char, &base_val);
-        Bigint temp_result = result;
-        result = bigint_add(&result, &product);
+        bigint_add(&result, &product);
         free_bigint(&temp_char);
         free_bigint(&product);
-        free_bigint(&temp_result);
         Bigint temp_base = base_val;
         base_val = bigint_multiply(&base_val, &temp_base);
         free_bigint(&temp_base);
@@ -408,10 +404,8 @@ void builtin_greater_than() {
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK) {
       if (item2.int_val.is_negative) {
         Bigint str_len = bigint_from_int64(item1.str_val.length);
-        Bigint difference = bigint_add(&item2.int_val, &str_len);
-        free_bigint(&item2.int_val);
+        bigint_add(&item2.int_val, &str_len);
         free_bigint(&str_len);
-        item2.int_val = difference;
       }
       string_remove_from_front(&item1.str_val, item2.int_val);
       stack_push(item1);
@@ -419,10 +413,8 @@ void builtin_greater_than() {
     else if (item1.type == TYPE_ARRAY) {
       if (item2.int_val.is_negative) {
         Bigint arr_len = bigint_from_int64(item1.arr_val.length);
-        Bigint difference = bigint_add(&item2.int_val, &arr_len);
-        free_bigint(&item2.int_val);
+        bigint_add(&item2.int_val, &arr_len);
         free_bigint(&arr_len);
-        item2.int_val = difference;
       }
       array_remove_from_front(&item1.arr_val, item2.int_val);
       stack_push(item1);
@@ -530,9 +522,7 @@ void builtin_minus() {
   coerce_types(&item1, &item2);
 
   if (item2.type == TYPE_INTEGER) {
-    Bigint difference = bigint_subtract(&item2.int_val, &item1.int_val);
-    free_bigint(&item2.int_val);
-    item2.int_val = difference;
+    bigint_subtract(&item2.int_val, &item1.int_val);
   }
   else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
     string_subtract(&item2.str_val, &item1.str_val);

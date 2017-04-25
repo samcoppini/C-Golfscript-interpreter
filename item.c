@@ -211,9 +211,7 @@ bool items_equal(Item *item1, Item *item2) {
 void items_add(Item *item1, Item *item2) {
   coerce_types(item1, item2);
   if (item1->type == TYPE_INTEGER) {
-    Bigint sum = bigint_add(&item1->int_val, &item2->int_val);
-    free_bigint(&item1->int_val);
-    item1->int_val = sum;
+    bigint_add(&item1->int_val, &item2->int_val);
   }
   else if (item1->type == TYPE_STRING) {
     string_add_str(&item1->str_val, &item2->str_val);

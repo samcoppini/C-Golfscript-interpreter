@@ -119,8 +119,8 @@ int bigint_compare(const Bigint *a, const Bigint *b);
 Bigint bigint_or(const Bigint *a, const Bigint *b);
 Bigint bigint_and(const Bigint *a, const Bigint *b);
 Bigint bigint_xor(const Bigint *a, const Bigint *b);
-Bigint bigint_add(const Bigint *a, const Bigint *b);
-Bigint bigint_subtract(const Bigint *a, const Bigint *b);
+void bigint_add(Bigint *a, const Bigint *b);
+void bigint_subtract(Bigint *a, const Bigint *b);
 Bigint bigint_multiply(const Bigint *a, const Bigint *b);
 void bigint_divmod(const Bigint *a, const Bigint *b, Bigint *quotient_result,
                    Bigint *remainder_result);

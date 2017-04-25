@@ -52,8 +52,8 @@ Bigint bigint_from_string(const String *str) {
 		Bigint result_temp = bigint_multiply(&result, &ten);
 
 		free_bigint(&result);
-		result = bigint_add(&result_temp, &digit);
-		free_bigint(&result_temp);
+		bigint_add(&result_temp, &digit);
+		result = result_temp;
 		free_bigint(&digit);
 	}
 	if (str->str_data[0] == '-' && !bigint_is_zero(&result)) {
@@ -150,20 +150,49 @@ static void bigint_remove_leading_zeros(Bigint *num) {
 		num->is_negative = false;
 }
 
+static void bigint_do_increment(Bigint *num) {
+	bool carry = true;
+	for (uint32_t i = 0; carry && i < num->length; i++) {
+		num->digits[i]++;
+		carry = (num->digits[i] == 0);
+	}
+	if (carry) {
+		bigint_add_digit(num);
+		num->digits[num->length - 1] = 1;
+	}
+}
+
+static void bigint_do_decrement(Bigint *num) {
+	if (bigint_is_zero(num)) {
+		num->digits[0] = 1;
+		num->is_negative = !num->is_negative;
+	}
+	else {
+		bool borrow = true;
+		for (uint32_t i = 0; borrow && i < num->length; i++) {
+			borrow = (num->digits[i] == 0);
+			num->digits[i]--;
+		}
+		bigint_remove_leading_zeros(num);
+	}
+}
+
 void bigint_increment(Bigint *num) {
-	Bigint one = bigint_from_int64(1);
-	Bigint sum = bigint_add(num, &one);
-	free_bigint(num);
-	free_bigint(&one);
-	*num = sum;
+	if (num->is_negative) {
+		bigint_do_decrement(num);
+	}
+	else {
+		bigint_do_increment(num);
+	}
 }
 
 void bigint_decrement(Bigint *num) {
-	Bigint one = bigint_from_int64(1);
-	Bigint difference = bigint_subtract(num, &one);
-	free_bigint(num);
-	free_bigint(&one);
-	*num = difference;
+	if (num->is_negative) {
+		bigint_do_increment(num);
+	}
+	else {
+		bigint_do_decrement(num);
+	}
 }
 
 static void bigint_bitshift_left(Bigint *num) {
@@ -329,114 +358,109 @@ Bigint bigint_xor(const Bigint *a, const Bigint *b) {
 	return result;
 }
 
-// Adds two bigints together, and returns their result
-// Does not bother checking anything regarding the numbers' sign
-static Bigint bigint_do_add(const Bigint *a, const Bigint *b) {
-	Bigint result = bigint_with_digits(max(a->length, b->length));
+// Adds one bigint to another. Does not handle signs correctly, just blindly
+// adds the digits to each other
+static void bigint_do_add(Bigint *a, const Bigint *b) {
 	uint32_t digit = 0;
 	bool carry = false;
 
-	while (digit < a->length || digit < b->length || carry) {
-		if (digit >= result.length) {
-			bigint_add_digit(&result);
+	while (digit < b->length || carry) {
+		if (digit >= a->length) {
+			bigint_add_digit(a);
 		}
 
 		bool overflowed = false;
 
-		if (a->length > digit)
-			result.digits[digit] += a->digits[digit];
-
 		if (b->length > digit) {
-			result.digits[digit] += b->digits[digit];
-			overflowed = (result.digits[digit] < b->digits[digit]);
+			a->digits[digit] += b->digits[digit];
+			overflowed = (a->digits[digit] < b->digits[digit]);
 		}
 
 		if (carry) {
-			result.digits[digit]++;
-			overflowed |= (result.digits[digit] == 0);
+			a->digits[digit]++;
+			overflowed |= (a->digits[digit] == 0);
 		}
 
 		carry = overflowed;
 		digit++;
 	}
-
-	return result;
 }
 
-// Subtracts one bigint from another, and returns their result
+// Subtracts one bigint from another
 // Does not make any considerations for the bigints' signs, and assumes
 // that a is greater than or equal to b
-static Bigint bigint_do_subtract(const Bigint *a, const Bigint *b) {
-	Bigint result = bigint_with_digits(a->length);
+static void bigint_do_subtract(Bigint *a, const Bigint *b) {
 	bool borrow = false;
 
-	for (uint32_t i = 0; i < a->length; i++) {
-		result.digits[i] = a->digits[i];
-
+	for (uint32_t i = 0; i < b->length || borrow; i++) {
 		if (borrow) {
-			borrow = (result.digits[i] == 0);
-			result.digits[i]--;
+			borrow = (a->digits[i] == 0);
+			a->digits[i]--;
 		}
 
 		if (i < b->length) {
-			result.digits[i] -= b->digits[i];
-			if (result.digits[i] > a->digits[i]) {
+			if (b->digits[i] > a->digits[i]) {
 				borrow = true;
 			}
+			a->digits[i] -= b->digits[i];
 		}
 	}
 
-	bigint_remove_leading_zeros(&result);
-	return result;
+	bigint_remove_leading_zeros(a);
 }
 
 // Returns the result of adding a and b, taking into account the signs of
 // the numbers
-Bigint bigint_add(const Bigint *a, const Bigint *b) {
+void bigint_add(Bigint *a, const Bigint *b) {
 	if (a->is_negative == b->is_negative) {
-		Bigint result = bigint_do_add(a, b);
-		result.is_negative = a->is_negative;
-		return result;
-	}
-	int comp_result = bigint_compare_absolute(a, b);
-	if (comp_result > 0) {
-		Bigint result = bigint_do_subtract(a, b);
-		result.is_negative = a->is_negative;
-		return result;
-	}
-	else if (comp_result < 0) {
-		Bigint result = bigint_do_subtract(b, a);
-		result.is_negative = b->is_negative;
-		return result;
+		bigint_do_add(a, b);
 	}
 	else {
-		// They're equal, just with different signs. In this case, return zero
-		return new_bigint();
+		int comp_result = bigint_compare_absolute(a, b);
+		if (comp_result > 0) {
+			bigint_do_subtract(a, b);
+		}
+		else if (comp_result < 0) {
+			Bigint result = copy_bigint(b);
+			bigint_do_subtract(&result, a);
+			free_bigint(a);
+			*a = result;
+		}
+		else {
+			// They're equal, just with different signs. They cancel each other out,
+			// so we set a to zero
+			a->length = 1;
+			a->digits[0] = 0;
+			a->is_negative = false;
+		}
 	}
 }
 
 // Returns the result of subtracting b from a, taking into account the signs
 // of the numbers
-Bigint bigint_subtract(const Bigint *a, const Bigint *b) {
+void bigint_subtract(Bigint *a, const Bigint *b) {
 	if (a->is_negative != b->is_negative) {
-		Bigint result = bigint_do_add(a, b);
-		result.is_negative = a->is_negative;
-		return result;
-	}
-	int comp_result = bigint_compare_absolute(a, b);
-	if (comp_result > 0) {
-		Bigint result = bigint_do_subtract(a, b);
-		result.is_negative = a->is_negative;
-		return result;
-	}
-	else if (comp_result < 0) {
-		Bigint result = bigint_do_subtract(b, a);
-		result.is_negative = !a->is_negative;
-		return result;
+		bigint_do_add(a, b);
 	}
 	else {
-		// They're equal, return zero
-		return new_bigint();
+		int comp_result = bigint_compare_absolute(a, b);
+		if (comp_result > 0) {
+			bigint_do_subtract(a, b);
+		}
+		else if (comp_result < 0) {
+			Bigint result = copy_bigint(b);
+			bigint_do_subtract(&result, a);
+			result.is_negative = !a->is_negative;
+			free_bigint(a);
+			*a = result;
+		}
+		else {
+			// They're equal to each other, so they cancel each other out. In this
+			// case, we set a to 0.
+			a->length = 1;
+			a->digits[0] = 0;
+			a->is_negative = false;
+		}
 	}
 }
 
@@ -531,9 +555,7 @@ void bigint_divmod(const Bigint *a, const Bigint *b, Bigint *quotient_result,
 
 			remainder.digits[0] |= ((a->digits[i] & (1ULL << j)) >> j);
 			if (bigint_compare_absolute(b, &remainder) <= 0) {
-				Bigint remainder_temp = remainder;
-				remainder = bigint_do_subtract(&remainder, b);
-				free_bigint(&remainder_temp);
+				bigint_do_subtract(&remainder, b);
 				quotient.digits[0] |= 1;
 			}
 		}
