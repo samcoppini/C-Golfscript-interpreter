@@ -501,7 +501,10 @@ static Bigint bigint_do_multiply(const Bigint *a, const Bigint *b) {
 			uint64_t res3 = upper_a * lower_b;
 			uint64_t res4 = upper_a * upper_b;
 
-			result.digits[cur_digit] += overflow;
+			if (add_check_overflow(&result.digits[cur_digit], overflow)) {
+				res4++;
+			}
+
 			overflow = res4;
 
 			if (add_check_overflow(&result.digits[cur_digit], res1)) {
