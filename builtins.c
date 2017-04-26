@@ -56,6 +56,7 @@ void builtin_asterisk() {
     else if (item1.type == TYPE_BLOCK) {
       repeat_block(&item1, item2.int_val);
       free_item(&item1);
+      free_item(&item2);
       return;
     }
     free_item(&item2);
