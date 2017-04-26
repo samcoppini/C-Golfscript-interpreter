@@ -589,12 +589,13 @@ void builtin_percent() {
       bigint_divmod(&item2.int_val, &item1.int_val, NULL, &remainder);
       free_bigint(&item1.int_val);
       item1.int_val = remainder;
-      free_item(&item2);
     }
     else if (item1.type == TYPE_ARRAY)
       array_step_over(&item1.arr_val, item2.int_val);
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK)
       string_step_over(&item1.str_val, item2.int_val);
+        
+    free_item(&item2);
     stack_push(item1);
   }
   else if (item2.type == TYPE_ARRAY) {
