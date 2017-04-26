@@ -267,8 +267,8 @@ void array_split(Array *array, Array *sep) {
   *array = split_array;
 }
 
-Item array_split_into_groups(Array *array, Bigint group_len) {
-  Item split_array = make_array();
+void array_split_into_groups(Array *array, Bigint group_len) {
+  Array split_array = new_array();
   Item cur_array = make_array();
 
   if (group_len.is_negative) {
@@ -288,17 +288,19 @@ Item array_split_into_groups(Array *array, Bigint group_len) {
   for (uint32_t i = 0; i < array->length; i++) {
     array_push(&cur_array.arr_val, array->items[i]);
     if (cur_array.arr_val.length == group_size) {
-      array_push(&split_array.arr_val, cur_array);
+      array_push(&split_array, cur_array);
       cur_array = make_array();
     }
   }
   if (cur_array.arr_val.length > 0) {
-    array_push(&split_array.arr_val, cur_array);
+    array_push(&split_array, cur_array);
   }
   else {
     free_item(&cur_array);
   }
-  return split_array;
+
+  free(array->items);
+  *array = split_array;
 }
 
 void array_step_over(Array *array, Bigint step_size) {

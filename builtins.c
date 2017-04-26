@@ -828,8 +828,8 @@ void builtin_slash() {
   }
   else if (item1.type == TYPE_ARRAY) {
     if (item2.type == TYPE_INTEGER) {
-      Item split_array = array_split_into_groups(&item1.arr_val, item2.int_val);
-      stack_push(split_array);
+      array_split_into_groups(&item1.arr_val, item2.int_val);
+      stack_push(item1);
       free_item(&item2);
     }
     else if (item1.type == TYPE_ARRAY) {

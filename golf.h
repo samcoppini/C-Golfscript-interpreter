@@ -93,7 +93,7 @@ void array_remove_empty_arrays(Array *array);
 void array_multiply(Array *array, Bigint factor);
 void array_subtract(Array *array, Array *to_subtract);
 void array_split(Array *array, Array *sep);
-Item array_split_into_groups(Array *array, Bigint group_len);
+void array_split_into_groups(Array *array, Bigint group_len);
 void array_step_over(Array *array, Bigint step_size);
 void array_sort(Array *array);
 void array_sort_by_mapping(Array *array, Array *mapped_array);
