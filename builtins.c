@@ -594,7 +594,7 @@ void builtin_percent() {
       array_step_over(&item1.arr_val, item2.int_val);
     else if (item1.type == TYPE_STRING || item1.type == TYPE_BLOCK)
       string_step_over(&item1.str_val, item2.int_val);
-        
+
     free_item(&item2);
     stack_push(item1);
   }
@@ -744,7 +744,9 @@ void builtin_rand() {
     error("rand requires an integer!");
   }
   else {
-    item.int_val = get_randint(item.int_val);
+    Bigint rand_val = get_randint(item.int_val);
+    free_bigint(&item.int_val);
+    item.int_val = rand_val;
     stack_push(item);
   }
 }
