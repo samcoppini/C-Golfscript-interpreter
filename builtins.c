@@ -169,6 +169,7 @@ void builtin_base() {
         Bigint temp_bigint = base_val;
         base_val = bigint_multiply(&item1.int_val, &base_val);
         free_bigint(&temp_bigint);
+        free_bigint(&product);
       }
       stack_push(make_integer_from_bigint(&result));
       free_bigint(&result);
