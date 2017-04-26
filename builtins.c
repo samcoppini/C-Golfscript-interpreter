@@ -533,11 +533,9 @@ void builtin_minus() {
   }
   else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
     string_subtract(&item2.str_val, &item1.str_val);
-    free(item1.str_val.str_data);
   }
   else if (item2.type == TYPE_ARRAY) {
     array_subtract(&item2.arr_val, &item1.arr_val);
-    free_item(&item1);
   }
   free_item(&item1);
   stack_push(item2);
