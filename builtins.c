@@ -965,13 +965,13 @@ void builtin_while() {
 void builtin_zip() {
   Item item = stack_pop();
   if (item.type != TYPE_ARRAY) {
-    error("Cannot zip over non-array!");
+    error("Cannot zip a non-array!");
   }
   Item zipped_array = make_array();
   for (uint32_t i = 0; i < item.arr_val.length; i++) {
     Item cur_item = item.arr_val.items[i];
     if (cur_item.type == TYPE_INTEGER) {
-      error("Cannot zip over array with an integer!");
+      error("Cannot zip an array with an integer!");
     }
     else if (cur_item.type == TYPE_ARRAY) {
       for (uint32_t j = 0; j < cur_item.arr_val.length; j++) {
@@ -991,12 +991,14 @@ void builtin_zip() {
           }
           string_add_char(&zipped_array.arr_val.items[j].str_val,
                           cur_item.arr_val.items[j].int_val.digits[0] & 255);
+          free_item(&cur_item.arr_val.items[j]);
         }
         else if (zipped_array.arr_val.items[j].type == TYPE_ARRAY) {
           array_push(&zipped_array.arr_val.items[j].arr_val,
                      cur_item.arr_val.items[j]);
         }
       }
+      free(cur_item.arr_val.items);
     }
     else if (cur_item.type == TYPE_STRING || cur_item.type == TYPE_BLOCK) {
       for (uint32_t j = 0; j < cur_item.str_val.length; j++) {
@@ -1019,6 +1021,7 @@ void builtin_zip() {
                      make_integer(cur_item.str_val.str_data[j]));
         }
       }
+      free_item(&cur_item);
     }
   }
   stack_push(zipped_array);
