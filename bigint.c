@@ -101,12 +101,9 @@ bool bigint_fits_in_uint32(const Bigint *num) {
 }
 
 uint32_t bigint_to_uint32(const Bigint *num) {
-  if (!bigint_fits_in_uint32(num)) {
-    error("Value is too large for requested operation!");
-  }
-  else if (num->is_negative) {
-    error("Cannot use negative value for requested operation!");
-  }
+  assert(bigint_fits_in_uint32(num));
+  assert(!num->is_negative);
+
   return num->digits[0];
 }
 
