@@ -599,5 +599,6 @@ Bigint bigint_exponent(const Bigint *base, const Bigint *exponent) {
       digit_val = squared_digit;
     }
   }
+  free_bigint(&digit_val);
   return result;
 }
