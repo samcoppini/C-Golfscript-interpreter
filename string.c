@@ -258,7 +258,7 @@ void string_remove_from_front(String *str, Bigint to_remove) {
     str->length = 0;
     return;
   }
-  
+
   str->length -= to_remove_int;
 
   for (uint32_t i = 0; i < str->length; i++) {
@@ -289,16 +289,12 @@ void map_string(String *str, Item *block) {
         string_add_char(&mapped_str.str_val, new_item.int_val.digits[0] & 255);
       }
       else {
-        items_add(&mapped_str, &new_item);
-        if (mapped_str.type == TYPE_BLOCK) {
-          if (i == 0) {
-            Bigint one = bigint_from_int64(1);
-            string_remove_from_front(&mapped_str.str_val, one);
-            free_bigint(&one);
-          }
-          mapped_str.type = TYPE_STRING;
+        if (new_item.type == TYPE_BLOCK) {
+          new_item.type = TYPE_STRING;
         }
+        items_add(&mapped_str, &new_item);
       }
+      free_item(&new_item);
     }
     stack.length = min(stack.length, start_stack_size);
   }
