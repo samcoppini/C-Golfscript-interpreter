@@ -291,6 +291,7 @@ void builtin_dollar_sign() {
       uint32_t index = stack.length - bigint_to_uint32(&item.int_val) - 1;
       stack_push(make_copy(&stack.items[index]));
     }
+    free_item(&item);
   }
   else if (item.type == TYPE_STRING) {
     string_sort(&item.str_val);
