@@ -485,6 +485,7 @@ void builtin_less_than() {
           item1.str_val.length = min(new_len, item1.str_val.length);
         }
       }
+      free_item(&item2);
       stack_push(item1);
     }
     else if (item1.type == TYPE_ARRAY) {
@@ -510,6 +511,7 @@ void builtin_less_than() {
         free_item(&item1.arr_val.items[item1.arr_val.length - i]);
       }
       item1.arr_val.length -= to_remove;
+      free_item(&item2);
       stack_push(item1);
     }
   }
