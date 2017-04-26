@@ -94,10 +94,9 @@ Item join_array(Array *array, Item *sep) {
     assert(false);
 
   for (uint32_t i = 0; i < array->length; i++) {
-    Item to_add = make_copy(&array->items[i]);
-    items_add(&joined_array, &to_add);
+    items_add(&joined_array, &array->items[i]);
     if (i + 1 < array->length) {
-      to_add = make_copy(sep);
+      Item to_add = make_copy(sep);
       items_add(&joined_array, sep);
       free_item(&to_add);
     }
