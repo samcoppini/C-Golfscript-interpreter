@@ -411,6 +411,7 @@ void builtin_greater_than() {
         free_bigint(&str_len);
       }
       string_remove_from_front(&item1.str_val, item2.int_val);
+      free_item(&item2);
       stack_push(item1);
     }
     else if (item1.type == TYPE_ARRAY) {
@@ -420,6 +421,7 @@ void builtin_greater_than() {
         free_bigint(&arr_len);
       }
       array_remove_from_front(&item1.arr_val, item2.int_val);
+      free_item(&item2);
       stack_push(item1);
     }
   }
