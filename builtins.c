@@ -899,6 +899,7 @@ void builtin_slash() {
       free_item(&cond_item);
       free_item(&item1);
       free_item(&item2);
+      free_item(&top);
     }
     else if (item2.type == TYPE_INTEGER) {
       error("Builtin / function undefined for block and int.");
