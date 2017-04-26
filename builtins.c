@@ -750,7 +750,9 @@ void builtin_rbracket() {
   }
   else {
     bracket_stack.length--;
-    first_item = bigint_to_uint32(&bracket_stack.items[bracket_stack.length].int_val);
+    Bigint first_bracket = bracket_stack.items[bracket_stack.length].int_val;
+    first_item = bigint_to_uint32(&first_bracket);
+    free_bigint(&first_bracket);
   }
   Item array = make_array();
   for (uint32_t i = first_item; i < stack.length; i++) {
