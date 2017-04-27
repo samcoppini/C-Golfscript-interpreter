@@ -78,6 +78,7 @@ void map_set(Map *map, String key, Item item) {
 
   while (map->keys[slot] != NULL) {
     if (string_compare(map->keys[slot], &key) == 0) {
+      free_string(&key);
       free_item(&map->items[slot]);
       map->items[slot] = item;
       return;
