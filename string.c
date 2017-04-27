@@ -184,7 +184,7 @@ void string_step_over(String *str, Bigint step_size) {
   for (uint32_t i = 1; i * step_int < str->length; i++) {
     str->str_data[i] = str->str_data[i * step_int];
   }
-  str->length = (str->length + 1) / step_int;
+  str->length = ((str->length - 1) / step_int) + 1;
 }
 
 // Splits a string into parts divided by a given seperator string
