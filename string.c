@@ -34,7 +34,7 @@ void string_request_size(String *str, uint32_t new_len) {
 }
 
 // Returns a copy of a string
-String copy_string(String *str) {
+String copy_string(const String *str) {
   String new_str = {malloc(str->allocated), str->length, str->allocated};
   if (new_str.str_data == NULL) {
     error("Unable to allocate space for new string!");
@@ -44,7 +44,7 @@ String copy_string(String *str) {
 }
 
 // Creates a String from a C string
-String create_string(char *to_copy) {
+String create_string(const char *to_copy) {
   size_t old_len = strlen(to_copy);
   uint32_t new_len = STRING_INIT_SIZE;
   while (new_len < old_len) {
@@ -60,7 +60,7 @@ String create_string(char *to_copy) {
 
 // Compares one string to another, returning a negative value if str1 is less
 // than str1, a positive value if str2 is greater, and 0 if they are equal
-int string_compare(String *str1, String *str2) {
+int string_compare(const String *str1, const String *str2) {
   uint32_t min_len = min(str1->length, str2->length);
   int result = memcmp(str1->str_data, str2->str_data, min_len);
 
@@ -91,7 +91,7 @@ void string_add_char(String *str, char c) {
 }
 
 // Adds a string to the end of a string
-void string_add_str(String *str, String *to_append) {
+void string_add_str(String *str, const String *to_append) {
   string_request_size(str, str->length + to_append->length);
   for (uint32_t i = 0; i < to_append->length; i++) {
     str->str_data[str->length + i] = to_append->str_data[i];
@@ -100,7 +100,7 @@ void string_add_str(String *str, String *to_append) {
 }
 
 // Adds an old-school null-terminated C string to the end of a string
-void string_add_c_str(String *str, char *to_append) {
+void string_add_c_str(String *str, const char *to_append) {
   size_t append_len = strlen(to_append);
   string_request_size(str, str->length + append_len);
   for (uint32_t i = 0; i < append_len; i++) {
@@ -111,7 +111,7 @@ void string_add_c_str(String *str, char *to_append) {
 
 // Returns the position of the first occurrence of a character in a string,
 // returning -1 if it isn't in the string
-int64_t string_find_char(String *str, char c) {
+int64_t string_find_char(const String *str, char c) {
   for (uint32_t i = 0; i < str->length; i++) {
     if (str->str_data[i] == c)
       return i;
@@ -122,7 +122,7 @@ int64_t string_find_char(String *str, char c) {
 // Returns the position of the first occurrence of to_find in str,
 // returning -1 if it's not in the string
 // Uses the Knuth-Morris-Pratt algorithm for O(n + k) time complexity
-int64_t string_find_str(String *str, String *to_find) {
+int64_t string_find_str(const String *str, const String *to_find) {
   if (to_find->length == 0) {
     return 0;
   }
@@ -188,7 +188,7 @@ void string_step_over(String *str, Bigint step_size) {
 }
 
 // Splits a string into parts divided by a given seperator string
-Item string_split(String *str, String *sep) {
+Item string_split(String *str, const String *sep) {
   Item arr = make_array();
   Item cur_string = empty_string();
 
@@ -372,7 +372,7 @@ void string_multiply(String *str, Bigint factor) {
 }
 
 // Removes the characters in to_subtract from str
-void string_subtract(String *str, String *to_subtract) {
+void string_subtract(String *str, const String *to_subtract) {
   bool subtracted_chars[256] = {0};
   for (uint32_t i = 0; i < to_subtract->length; i++) {
     subtracted_chars[to_subtract->str_data[i]] = true;
@@ -391,7 +391,7 @@ void string_subtract(String *str, String *to_subtract) {
 
 // Removes all characters from str that aren't in to_and, and removes
 // duplicate characters
-void string_setwise_and(String *str, String *to_and) {
+void string_setwise_and(String *str, const String *to_and) {
   bool present_chars[256] = {0};
   for (uint32_t i = 0; i < to_and->length; i++) {
     present_chars[to_and->str_data[i]] = true;
@@ -410,7 +410,7 @@ void string_setwise_and(String *str, String *to_and) {
 }
 
 // Replaces str with the union of str and to_or
-void string_setwise_or(String *str, String *to_or) {
+void string_setwise_or(String *str, const String *to_or) {
   bool present_chars[256] = {0};
   uint32_t chars_removed = 0;
   for (uint32_t i = 0; i < str->length; i++) {
@@ -432,7 +432,7 @@ void string_setwise_or(String *str, String *to_or) {
 }
 
 // Replaces str with the setwise symmetric difference of str and to_xor
-void string_setwise_xor(String *str, String *to_xor) {
+void string_setwise_xor(String *str, const String *to_xor) {
   bool in_string1[256] = {0};
   bool in_string2[256] = {0};
   for (uint32_t i = 0; i < to_xor->length; i++) {

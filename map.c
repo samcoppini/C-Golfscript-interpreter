@@ -10,7 +10,7 @@
 #define MAP_MAX_LOAD_FACTOR 0.6
 
 // Implements the djb2 hash function over a key
-static uint32_t hash(String *key) {
+static uint32_t hash(const String *key) {
   uint32_t hash_val = 5381;
   for (uint32_t i = 0; i < key->length; i++) {
     hash_val = ((hash_val << 5) + hash_val) + key->str_data[i];
@@ -19,7 +19,7 @@ static uint32_t hash(String *key) {
 }
 
 // Gets the appropriate slot for a given key in a given map
-static uint32_t get_slot(Map *map, String *key) {
+static uint32_t get_slot(Map *map, const String *key) {
   uint32_t mask = map->allocated - 1;
   return hash(key) & mask;
 }
@@ -99,7 +99,7 @@ void map_set(Map *map, String key, Item item) {
   }
 }
 
-Item *map_get(Map *map, String *key) {
+Item *map_get(Map *map, const String *key) {
   uint32_t slot = get_slot(map, key);
   while (map->keys[slot] != NULL) {
     if (string_compare(map->keys[slot], key) == 0)

@@ -27,7 +27,7 @@ void free_set(Set *set) {
   free_tree(set->root);
 }
 
-static TreeNode *new_node(Item *item) {
+static TreeNode *new_node(const Item *item) {
   TreeNode *node = malloc(sizeof(TreeNode));
   node->item = make_copy(item);
   node->left = NULL;
@@ -38,7 +38,7 @@ static TreeNode *new_node(Item *item) {
 
 // Performs a search through the set's tree and returns whether the given
 // item exists in the set
-bool set_has(Set *set, Item *item) {
+bool set_has(const Set *set, const Item *item) {
   TreeNode *cur_node = set->root;
   while (cur_node != NULL) {
     int result = item_compare(item, &cur_node->item);
@@ -122,7 +122,7 @@ static TreeNode *double_rotate_right(TreeNode *cur_node) {
 
 // Inserts a node in an AVL tree, rotating the tree if necessary, returning
 // the new top of this tree after a rotation
-static TreeNode *insert_node(TreeNode *cur_node, Item *item) {
+static TreeNode *insert_node(TreeNode *cur_node, const Item *item) {
   if (cur_node == NULL) {
     return new_node(item);
   }
@@ -160,7 +160,7 @@ static TreeNode *insert_node(TreeNode *cur_node, Item *item) {
 }
 
 // Adds an item to a set
-void set_add(Set *set, Item *item) {
+void set_add(Set *set, const Item *item) {
   set->root = insert_node(set->root, item);
 }
 
@@ -174,7 +174,7 @@ static TreeNode *get_largest_node(TreeNode *cur_node) {
 
 // Deletes a node from an AVL tree, rotating the tree if it becomes unbalanced
 // and returns the root node of the subtree
-static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
+static TreeNode *delete_node(TreeNode *cur_node, const Item *item) {
   if (cur_node == NULL) {
     return NULL;
   }
@@ -245,6 +245,6 @@ static TreeNode *delete_node(TreeNode *cur_node, Item *item) {
   return cur_node;
 }
 
-void set_remove(Set *set, Item *item) {
+void set_remove(Set *set, const Item *item) {
   set->root = delete_node(set->root, item);
 }

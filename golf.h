@@ -79,28 +79,28 @@ extern Array bracket_stack;
 // array.c
 Array new_array();
 void free_array(Array *array);
-Array array_from_string(String *str);
+Array array_from_string(const String *str);
 void array_push(Array *arr, Item item);
 void array_remove_from_front(Array *array, Bigint to_remove);
-int64_t array_find(Array *arr, Item *item);
+int64_t array_find(const Array *arr, const Item *item);
 void array_reverse(Array *array);
-Item join_array(Array *array, Item *sep);
+Item join_array(Array *array, const Item *sep);
 void map_array(Array *array, Item *block);
 void fold_array(Array *array, Item *block);
 void filter_array(Array *array, Item *block);
 void array_remove_empty_strings(Array *array);
 void array_remove_empty_arrays(Array *array);
 void array_multiply(Array *array, Bigint factor);
-void array_subtract(Array *array, Array *to_subtract);
-void array_split(Array *array, Array *sep);
+void array_subtract(Array *array, const Array *to_subtract);
+void array_split(Array *array, const Array *sep);
 void array_split_into_groups(Array *array, Bigint group_len);
 void array_step_over(Array *array, Bigint step_size);
 void array_sort(Array *array);
-void array_sort_by_mapping(Array *array, Array *mapped_array);
-void string_sort_by_mapping(String *str, Array *mapped_str);
-void array_and(Array *array, Array *to_and);
-void array_or(Array *array, Array *to_or);
-void array_xor(Array *array, Array *to_xor);
+void array_sort_by_mapping(Array *array, const Array *mapped_array);
+void string_sort_by_mapping(String *str, const Array *mapped_str);
+void array_and(Array *array, const Array *to_and);
+void array_or(Array *array, const Array *to_or);
+void array_xor(Array *array, const Array *to_xor);
 
 // bigint.c
 Bigint new_bigint();
@@ -167,22 +167,22 @@ noreturn void error(const char *msg, ...);
 
 // item.c
 Item make_integer(int64_t int_val);
-Item make_integer_from_bigint(Bigint *bigint);
-Item make_string(String *str_val);
+Item make_integer_from_bigint(const Bigint *bigint);
+Item make_string(const String *str_val);
 Item empty_string();
 Item make_block(String str_val);
 Item make_array();
 Item make_builtin(void (*function)());
-Item make_copy(Item *item);
-String get_literal(Item *item);
-bool item_boolean(Item *item);
-int item_compare(Item *item1, Item *item2);
-bool items_equal(Item *item1, Item *item2);
+Item make_copy(const Item *item);
+String get_literal(const Item *item);
+bool item_boolean(const Item *item);
+int item_compare(const Item *item1, const Item *item2);
+bool items_equal(const Item *item1, const Item *item2);
 void items_add(Item *item1, Item *item2);
 void swap_items(Item *a, Item *b);
 void free_item(Item *item);
-void output_item(Item *item);
-String array_to_string(Item *array);
+void output_item(const Item *item);
+String array_to_string(const Item *array);
 void coerce_types(Item *item1, Item *item2);
 
 // execute.c
@@ -198,7 +198,7 @@ void execute_item(Item *item);
 Map new_map();
 void free_map(Map *map);
 void map_set(Map *map, String key, Item item);
-Item *map_get(Map *map, String *key);
+Item *map_get(Map *map, const String *key);
 
 // random.c
 void init_rng();
@@ -207,36 +207,36 @@ Bigint get_randint(Bigint max_val);
 // set.c
 Set new_set();
 void free_set(Set *set);
-bool set_has(Set *set, Item *item);
-void set_add(Set *set, Item *item);
-void set_remove(Set *set, Item *item);
+bool set_has(const Set *set, const Item *item);
+void set_add(Set *set, const Item *item);
+void set_remove(Set *set, const Item *item);
 
 // string.c
 String new_string();
 void free_string(String *str);
-String copy_string(String *str);
-String create_string(char *str);
-int string_compare(String *str1, String *str2);
+String copy_string(const String *str);
+String create_string(const char *str);
+int string_compare(const String *str1, const String *str2);
 void string_reverse(String *str);
 void string_add_char(String *str, char c);
-void string_add_str(String *str, String *to_append);
-void string_add_c_str(String *str, char *to_append);
+void string_add_str(String *str, const String *to_append);
+void string_add_c_str(String *str, const char *to_append);
 void string_remove_from_front(String *str, Bigint to_remove);
 Item string_join(String *str, String *sep);
 void map_string(String *str, Item *block);
 void fold_string(String *str, Item *block);
 void filter_string(String *str, Item *block);
-int64_t string_find_char(String *str, char c);
-int64_t string_find_str(String *str, String *to_find);
-Item string_split(String *str, String *sep);
+int64_t string_find_char(const String *str, char c);
+int64_t string_find_str(const String *str, const String *to_find);
+Item string_split(String *str, const String *sep);
 Item string_split_into_groups(String *str, Bigint group_len);
 void string_step_over(String *str, Bigint step_size);
 void string_sort(String *str);
 void string_multiply(String *str, Bigint factor);
-void string_subtract(String *str, String *to_subtract);
-void string_setwise_and(String *str, String *to_and);
-void string_setwise_or(String *str, String *to_or);
-void string_setwise_xor(String *str, String *to_xor);
+void string_subtract(String *str, const String *to_subtract);
+void string_setwise_and(String *str, const String *to_and);
+void string_setwise_or(String *str, const String *to_or);
+void string_setwise_xor(String *str, const String *to_xor);
 String read_file_to_string(FILE *file);
 
 #endif

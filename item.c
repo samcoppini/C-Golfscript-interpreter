@@ -12,12 +12,12 @@ Item make_integer(int64_t int_val) {
   return item;
 }
 
-Item make_integer_from_bigint(Bigint *bigint) {
+Item make_integer_from_bigint(const Bigint *bigint) {
   Item item = {TYPE_INTEGER, .int_val = copy_bigint(bigint)};
   return item;
 }
 
-Item make_string(String *str_val) {
+Item make_string(const String *str_val) {
   Item item = {TYPE_STRING, .str_val = copy_string(str_val)};
   return item;
 }
@@ -43,7 +43,7 @@ Item make_builtin(void (*function)()) {
 }
 
 // Returns a copy of an item, duplicating its dynamically allocated contents
-Item make_copy(Item *item) {
+Item make_copy(const Item *item) {
   Item new_item;
 
   new_item.type = item->type;
@@ -64,7 +64,7 @@ Item make_copy(Item *item) {
 
 // Returns a string representation of an item, which returns the original
 // item when evaluated
-String get_literal(Item *item) {
+String get_literal(const Item *item) {
   String str = new_string();
   if (item->type == TYPE_INTEGER) {
     free(str.str_data);
@@ -123,7 +123,7 @@ String get_literal(Item *item) {
 
 // Returns whether the item evaluates as "true"
 // Only zero, empty blocks, empty arrays and empty strings evaluate as false
-bool item_boolean(Item *item) {
+bool item_boolean(const Item *item) {
   switch (item->type) {
     case TYPE_INTEGER:
       return !bigint_is_zero(&item->int_val);
@@ -151,7 +151,7 @@ bool types_compatible(enum Type type1, enum Type type2) {
 // Compares two items, returing a positive value if item1 is "greater"
 // than item2, a negative value if item2 is greater, and 0 if the two
 // items are the same
-int item_compare(Item *item1, Item *item2) {
+int item_compare(const Item *item1, const Item *item2) {
   if (!types_compatible(item1->type, item2->type)) {
     return item1->type - item2->type;
   }
@@ -203,7 +203,7 @@ int item_compare(Item *item1, Item *item2) {
 }
 
 // Returns whether two items are equal
-bool items_equal(Item *item1, Item *item2) {
+bool items_equal(const Item *item1, const Item *item2) {
   return item_compare(item1, item2) == 0;
 }
 
@@ -249,7 +249,7 @@ void free_item(Item *item) {
   }
 }
 
-void output_item(Item *item) {
+void output_item(const Item *item) {
   if (item->type == TYPE_INTEGER) {
     String str = bigint_to_string(&item->int_val);
     string_add_char(&str, '\0');
@@ -277,7 +277,7 @@ void output_item(Item *item) {
 
 // Converts an array to a string
 // Note that integers are converted to their ascii equivalents
-String array_to_string(Item *array) {
+String array_to_string(const Item *array) {
   String str = new_string();
   for (uint32_t i = 0; i < array->arr_val.length; i++) {
     Item *cur_item = &array->arr_val.items[i];

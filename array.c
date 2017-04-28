@@ -23,7 +23,7 @@ void free_array(Array *array) {
 }
 
 // Converts a string into an array of integers
-Array array_from_string(String *str) {
+Array array_from_string(const String *str) {
   Array int_array = new_array();
   for (uint32_t i = 0; i < str->length; i++) {
     array_push(&int_array, make_integer(str->str_data[i]));
@@ -65,7 +65,7 @@ void array_remove_from_front(Array *array, Bigint to_remove) {
 }
 
 // Returns the index of an element, or -1 if it's not present in the array
-int64_t array_find(Array *array, Item *item) {
+int64_t array_find(const Array *array, const Item *item) {
   for (uint32_t i = 0; i < array->length; i++) {
     if (items_equal(item, &array->items[i])) {
       return i;
@@ -83,7 +83,7 @@ void array_reverse(Array *array) {
 }
 
 // Joins an array's elements with a string or array in between each element
-Item join_array(Array *array, Item *sep) {
+Item join_array(Array *array, const Item *sep) {
   Item joined_array;
 
   if (sep->type == TYPE_ARRAY)
@@ -97,7 +97,7 @@ Item join_array(Array *array, Item *sep) {
     items_add(&joined_array, &array->items[i]);
     if (i + 1 < array->length) {
       Item to_add = make_copy(sep);
-      items_add(&joined_array, sep);
+      items_add(&joined_array, &to_add);
       free_item(&to_add);
     }
   }
@@ -214,7 +214,7 @@ void array_multiply(Array *array, Bigint factor) {
 }
 
 // Removes array members from array if they are present in to_subtract
-void array_subtract(Array *array, Array *to_subtract) {
+void array_subtract(Array *array, const Array *to_subtract) {
   uint32_t items_removed = 0;
   Set to_remove = new_set();
   for (uint32_t i = 0; i < to_subtract->length; i++) {
@@ -235,7 +235,7 @@ void array_subtract(Array *array, Array *to_subtract) {
   free_set(&to_remove);
 }
 
-void array_split(Array *array, Array *sep) {
+void array_split(Array *array, const Array *sep) {
   Array split_array = new_array();
   Item cur_array = make_array();
   uint32_t i;
@@ -331,7 +331,7 @@ void array_step_over(Array *array, Bigint step_size) {
   array->length = ((array->length - 1) / step_len) + 1;
 }
 
-int *get_sorted_indexes(Array *array, uint32_t start, uint32_t end) {
+int *get_sorted_indexes(const Array *array, uint32_t start, uint32_t end) {
   if (start > end) {
     return NULL;
   }
@@ -400,7 +400,7 @@ void array_sort(Array *array) {
   *array = temp;
 }
 
-void array_sort_by_mapping(Array *array, Array *mapped_array) {
+void array_sort_by_mapping(Array *array, const Array *mapped_array) {
   if (array->length <= 1)
     return;
 
@@ -415,7 +415,7 @@ void array_sort_by_mapping(Array *array, Array *mapped_array) {
   *array = temp;
 }
 
-void string_sort_by_mapping(String *str, Array *mapped_str) {
+void string_sort_by_mapping(String *str, const Array *mapped_str) {
   if (str->length <= 1)
     return;
 
@@ -431,7 +431,7 @@ void string_sort_by_mapping(String *str, Array *mapped_str) {
 }
 
 // Replaces array with the intersection of array and to_and
-void array_and(Array *array, Array *to_and) {
+void array_and(Array *array, const Array *to_and) {
   Set can_add = new_set();
   for (uint32_t i = 0; i < to_and->length; i++) {
     set_add(&can_add, &to_and->items[i]);
@@ -454,7 +454,7 @@ void array_and(Array *array, Array *to_and) {
 }
 
 // Replaces array with the union of array and to_or
-void array_or(Array *array, Array *to_or) {
+void array_or(Array *array, const Array *to_or) {
   uint32_t items_removed = 0;
   Set already_added = new_set();
   for (uint32_t i = 0; i < array->length; i++) {
@@ -481,7 +481,7 @@ void array_or(Array *array, Array *to_or) {
 
 // Calculates the symmteric difference of two arrays and store the result
 // in array
-void array_xor(Array *array, Array *to_xor) {
+void array_xor(Array *array, const Array *to_xor) {
   Set first_set  = new_set();
   Set second_set = new_set();
   for (uint32_t i = 0; i < to_xor->length; i++) {
