@@ -319,16 +319,17 @@ void array_step_over(Array *array, Bigint step_size) {
     step_len = bigint_to_uint32(&step_size);
   }
 
-  for (uint32_t i = 1; i < array->length; i++) {
-    if (i % step_len) {
-      free_item(&array->items[i]);
+  if (step_len > 1) {
+    for (uint32_t i = 1; i < array->length; i++) {
+      if (i % step_len) {
+        free_item(&array->items[i]);
+      }
+      else {
+        array->items[i / step_len] = array->items[i];
+      }
     }
-    else {
-      array->items[i / step_len] = array->items[i];
-    }
+    array->length = ((array->length - 1) / step_len) + 1;
   }
-
-  array->length = ((array->length - 1) / step_len) + 1;
 }
 
 int *get_sorted_indexes(const Array *array, uint32_t start, uint32_t end) {
