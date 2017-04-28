@@ -41,6 +41,12 @@ Bigint bigint_from_int64(int64_t int_val) {
   return num;
 }
 
+Bigint bigint_from_uint64(uint64_t int_val) {
+  Bigint num = new_bigint();
+  num.digits[0] = int_val;
+  return num;
+}
+
 Bigint bigint_from_string(const String *str) {
   Bigint result = new_bigint();
   Bigint ten = bigint_from_int64(10);
@@ -73,12 +79,17 @@ String bigint_to_string(const Bigint *num) {
   }
   else {
     Bigint num_copy = copy_bigint(num);
-    Bigint ten = bigint_from_int64(10);
+    Bigint ten_quintillion = bigint_from_uint64(10000000000000000000ULL);
 
     while (!bigint_is_zero(&num_copy)) {
       Bigint remainder, quotient;
-      bigint_divmod(&num_copy, &ten, &quotient, &remainder);
-      string_add_char(&num_str, remainder.digits[0] + '0');
+      bigint_divmod(&num_copy, &ten_quintillion, &quotient, &remainder);
+      for (uint32_t i = 0; i < 19; i++) {
+        if (remainder.digits[0] != 0 || !bigint_is_zero(&quotient)) {
+          string_add_char(&num_str, (remainder.digits[0] % 10) + '0');
+          remainder.digits[0] /= 10;
+        }
+      }
       free_bigint(&remainder);
       free_bigint(&num_copy);
       num_copy = quotient;
@@ -90,7 +101,7 @@ String bigint_to_string(const Bigint *num) {
     string_reverse(&num_str);
 
     free_bigint(&num_copy);
-    free_bigint(&ten);
+    free_bigint(&ten_quintillion);
 
     return num_str;
   }
