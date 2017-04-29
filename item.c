@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "golf.h"
 
 Item make_integer(int64_t int_val) {
@@ -252,20 +253,15 @@ void free_item(Item *item) {
 void output_item(const Item *item) {
   if (item->type == TYPE_INTEGER) {
     String str = bigint_to_string(&item->int_val);
-    string_add_char(&str, '\0');
-    printf("%s", str.str_data);
+    write(STDOUT_FILENO, str.str_data, str.length);
     free_string(&str);
   }
   else if (item->type == TYPE_STRING) {
-    for (uint32_t i = 0; i < item->str_val.length; i++) {
-      putchar(item->str_val.str_data[i]);
-    }
+    write(STDOUT_FILENO, item->str_val.str_data, item->str_val.length);
   }
   else if (item->type == TYPE_BLOCK) {
     putchar('{');
-    for (uint32_t i = 0; i < item->str_val.length; i++) {
-      putchar(item->str_val.str_data[i]);
-    }
+    write(STDOUT_FILENO, item->str_val.str_data, item->str_val.length);
     putchar('}');
   }
   else if (item->type == TYPE_ARRAY) {
