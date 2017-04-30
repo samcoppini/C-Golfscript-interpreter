@@ -133,7 +133,7 @@ bool bigint_is_zero(const Bigint *num) {
 
 // Adds a digit to the front of a bigint, initializing the digit to zero, and
 // allocating additional memory for the number if need be
-static void bigint_add_digit(Bigint *num) {
+static inline void bigint_add_digit(Bigint *num) {
   if (num->length == num->allocated) {
     num->allocated <<= 1;
     num->digits = realloc(num->digits, sizeof(uint64_t) * num->allocated);
@@ -144,7 +144,7 @@ static void bigint_add_digit(Bigint *num) {
 
 // Removes all the zeros from the front of a bigint, and corrects a bigint
 // if it's "negative zero"
-static void bigint_remove_leading_zeros(Bigint *num) {
+static inline void bigint_remove_leading_zeros(Bigint *num) {
   for (uint32_t i = num->length - 1; i > 0; i--) {
     if (num->digits[i] != 0) {
       return;
@@ -158,7 +158,7 @@ static void bigint_remove_leading_zeros(Bigint *num) {
     num->is_negative = false;
 }
 
-static void bigint_do_increment(Bigint *num) {
+static inline void bigint_do_increment(Bigint *num) {
   bool carry = true;
   for (uint32_t i = 0; carry && i < num->length; i++) {
     num->digits[i]++;
@@ -170,7 +170,7 @@ static void bigint_do_increment(Bigint *num) {
   }
 }
 
-static void bigint_do_decrement(Bigint *num) {
+static inline void bigint_do_decrement(Bigint *num) {
   if (bigint_is_zero(num)) {
     num->digits[0] = 1;
     num->is_negative = !num->is_negative;
@@ -203,7 +203,7 @@ void bigint_decrement(Bigint *num) {
   }
 }
 
-static void bigint_bitshift_left(Bigint *num) {
+static inline void bigint_bitshift_left(Bigint *num) {
   bigint_add_digit(num);
   uint64_t carry = 0;
   for (uint32_t i = 0; i < num->length; i++) {

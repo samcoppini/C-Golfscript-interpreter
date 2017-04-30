@@ -21,7 +21,7 @@ void free_string(String *str) {
 
 // Makes sure that the length of the allocated string is at least new_len bytes
 // long, and if not, we reallocate more space for the string
-void string_request_size(String *str, uint32_t new_len) {
+static inline void string_request_size(String *str, uint32_t new_len) {
   if (new_len > str->allocated) {
     do {
       str->allocated <<= 1;
