@@ -451,7 +451,6 @@ void builtin_lbracket() {
   array_push(&bracket_stack, make_integer(stack.length));
 }
 
-
 void builtin_less_than() {
   Item item1 = stack_pop();
   Item item2 = stack_pop();
@@ -522,25 +521,6 @@ void builtin_less_than() {
   }
 }
 
-void builtin_minus() {
-  Item item1 = stack_pop();
-  Item item2 = stack_pop();
-
-  coerce_types(&item1, &item2);
-
-  if (item2.type == TYPE_INTEGER) {
-    bigint_subtract(&item2.int_val, &item1.int_val);
-  }
-  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
-    string_subtract(&item2.str_val, &item1.str_val);
-  }
-  else if (item2.type == TYPE_ARRAY) {
-    array_subtract(&item2.arr_val, &item1.arr_val);
-  }
-  free_item(&item1);
-  stack_push(item2);
-}
-
 void builtin_lparen() {
   Item item = stack_pop();
 
@@ -573,6 +553,25 @@ void builtin_lparen() {
     stack_push(item);
     stack_push(new_item);
   }
+}
+
+void builtin_minus() {
+  Item item1 = stack_pop();
+  Item item2 = stack_pop();
+
+  coerce_types(&item1, &item2);
+
+  if (item2.type == TYPE_INTEGER) {
+    bigint_subtract(&item2.int_val, &item1.int_val);
+  }
+  else if (item2.type == TYPE_STRING || item2.type == TYPE_BLOCK) {
+    string_subtract(&item2.str_val, &item1.str_val);
+  }
+  else if (item2.type == TYPE_ARRAY) {
+    array_subtract(&item2.arr_val, &item1.arr_val);
+  }
+  free_item(&item1);
+  stack_push(item2);
 }
 
 void builtin_percent() {
