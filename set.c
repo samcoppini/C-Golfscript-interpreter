@@ -9,13 +9,13 @@ Set new_set() {
   return set;
 }
 
-void free_node(TreeNode *node) {
+static inline void free_node(TreeNode *node) {
   free_item(&node->item);
   free(node);
 }
 
 // Frees a tree node and all of its descendants
-static void free_tree(TreeNode *node) {
+static inline void free_tree(TreeNode *node) {
   if (node == NULL)
     return;
   free_tree(node->left);
@@ -27,7 +27,7 @@ void free_set(Set *set) {
   free_tree(set->root);
 }
 
-static TreeNode *new_node(const Item *item) {
+static inline TreeNode *new_node(const Item *item) {
   TreeNode *node = malloc(sizeof(TreeNode));
   node->item = make_copy(item);
   node->left = NULL;
@@ -56,7 +56,7 @@ bool set_has(const Set *set, const Item *item) {
 }
 
 // Returns the height of a given node, even if it's null
-static int get_height(TreeNode *node) {
+static inline int get_height(TreeNode *node) {
   if (node == NULL)
     return 0;
   else
@@ -64,7 +64,7 @@ static int get_height(TreeNode *node) {
 }
 
 // Sets the height of a tree node based on its children
-static void set_height(TreeNode *node) {
+static inline void set_height(TreeNode *node) {
   int left_height = get_height(node->left);
   int right_height = get_height(node->right);
   node->height = max(left_height, right_height) + 1;
@@ -72,7 +72,7 @@ static void set_height(TreeNode *node) {
 
 // Rotates a tree node to the left, and returns the new top
 // Only call this on a node with a right child
-static TreeNode *single_rotate_left(TreeNode *cur_node) {
+static inline TreeNode *single_rotate_left(TreeNode *cur_node) {
   TreeNode *new_root = cur_node->right;
   cur_node->right = new_root->left;
   new_root->left = cur_node;
@@ -85,7 +85,7 @@ static TreeNode *single_rotate_left(TreeNode *cur_node) {
 
 // Rotates a tree node to the right, and returns the new top
 // Only call this on a node with a left child
-static TreeNode *single_rotate_right(TreeNode *cur_node) {
+static inline TreeNode *single_rotate_right(TreeNode *cur_node) {
   TreeNode *new_root = cur_node->left;
   cur_node->left = new_root->right;
   new_root->right = cur_node;
@@ -103,7 +103,7 @@ static TreeNode *single_rotate_right(TreeNode *cur_node) {
 //    /
 //   c
 // Only call this if node, node->right, and node->right->left are all non null
-static TreeNode *double_rotate_left(TreeNode *cur_node) {
+static inline TreeNode *double_rotate_left(TreeNode *cur_node) {
   cur_node->right = single_rotate_right(cur_node->right);
   return single_rotate_left(cur_node);
 }
@@ -115,7 +115,7 @@ static TreeNode *double_rotate_left(TreeNode *cur_node) {
 //   \
 //    c
 // Only call this if node, node->left, and node->left->right are all non null
-static TreeNode *double_rotate_right(TreeNode *cur_node) {
+static inline TreeNode *double_rotate_right(TreeNode *cur_node) {
   cur_node->left = single_rotate_left(cur_node->left);
   return single_rotate_right(cur_node);
 }
@@ -166,7 +166,7 @@ void set_add(Set *set, const Item *item) {
 
 // Returns the largest value in a given subtree
 // Do not give a null pointer!
-static TreeNode *get_largest_node(TreeNode *cur_node) {
+static inline TreeNode *get_largest_node(TreeNode *cur_node) {
   while (cur_node->right != NULL)
     cur_node = cur_node->right;
   return cur_node;
