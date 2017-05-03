@@ -584,6 +584,9 @@ void builtin_percent() {
 
   if (item2.type == TYPE_INTEGER) {
     if (item1.type == TYPE_INTEGER) {
+      if (bigint_is_zero(&item1.int_val)) {
+        error("Attempted to divide by zero!");
+      }
       Bigint remainder;
       bigint_divmod(&item2.int_val, &item1.int_val, NULL, &remainder);
       free_bigint(&item1.int_val);
