@@ -272,36 +272,24 @@ String next_token(String *str, uint32_t *code_pos) {
     return token;
 
   char c = str->str_data[*code_pos];
-  if (c == '"') {
-    string_add_char(&token, c);
+  string_add_char(&token, c);
+  
+  if (c == '"')
     return get_escaped_string(str, &token, code_pos);
-  }
-  else if (c == '\'') {
-    string_add_char(&token, c);
+  else if (c == '\'')
     return get_raw_string(str, &token, code_pos);
-  }
-  else if (isdigit(c) || c == '-') {
-    string_add_char(&token, c);
+  else if (isdigit(c) || c == '-')
     return get_number(str, &token, code_pos);
-  }
-  else if (isalpha(c) || c == '_') {
-    string_add_char(&token, c);
+  else if (isalpha(c) || c == '_')
     return get_identifier(str, &token, code_pos);
-  }
-  else if (c == '{') {
-    string_add_char(&token, c);
+  else if (c == '{')
     return get_block(str, &token, code_pos);
-  }
-  else if (c == '#') {
-    string_add_char(&token, c);
+  else if (c == '#')
     return get_comment(str, &token, code_pos);
-  }
   else {
-    string_add_char(&token, c);
     *code_pos += 1;
+    return token;
   }
-
-  return token;
 }
 
 void execute_string(String *str) {
