@@ -138,6 +138,7 @@ bool item_boolean(const Item *item) {
 
     default:
       assert(false);
+      return false;
   }
 }
 
@@ -200,6 +201,7 @@ int item_compare(const Item *item1, const Item *item2) {
 
     default:
       assert(false);
+      return false;
   }
 }
 
