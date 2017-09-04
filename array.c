@@ -191,9 +191,6 @@ void array_multiply(Array *array, Bigint factor) {
   }
   uint32_t to_multiply_by = bigint_to_uint32(&factor);
   uint64_t new_len = array->length * to_multiply_by;
-  if (new_len > UINT32_MAX) {
-    error("Factor too large to multiply array by!");
-  }
   if (new_len > array->allocated) {
     while (new_len > array->allocated) {
       array->allocated <<= 1;

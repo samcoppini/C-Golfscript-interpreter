@@ -356,9 +356,6 @@ void string_multiply(String *str, Bigint factor) {
   }
   uint32_t to_multiply_by = bigint_to_uint32(&factor);
   uint64_t new_len = str->length * to_multiply_by;
-  if (new_len >= UINT32_MAX) {
-    error("Factor too large to multiply string by!");
-  }
   string_request_size(str, new_len);
   uint32_t cur_len = str->length;
   while (to_multiply_by > 1) {
