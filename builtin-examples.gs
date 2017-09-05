@@ -96,10 +96,7 @@ nl
 nl
 
 "Tests for \\" puts
-1:a a ] [1 1] = print
-1:0; 0 1 = print
-# Fix the redefinition of zero from the previous test
-1 1 - :0;
+1 2 3 \ ] [1 3 2] = print
 nl
 
 "Tests for ;" puts
@@ -113,7 +110,6 @@ nl
 {asdf} -1 < {asd} = print
 nl
 
-Unimplemented as of right now
 "Tests for >" puts
 3 4 > 0 = print
 "asdf" "asdg" > 0 = print
