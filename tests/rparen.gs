@@ -1,6 +1,6 @@
 ;
 
-"A testing program for golfscript. Tests the behavior of the ( operator. " puts
+"A testing program for golfscript. Tests the behavior of the ) operator. " puts
 "1's indicate passed tests. " puts
 
 # Integers
