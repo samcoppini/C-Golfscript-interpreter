@@ -551,7 +551,8 @@ Bigint bigint_multiply(const Bigint *a, const Bigint *b) {
 }
 
 // Divides a by b, and returns the quotient and remainder through the passed
-// in pointers
+// in pointers. Pass in NULL to either the quotient_result or remainder_result
+// to not save that result
 void bigint_divmod(const Bigint *a, const Bigint *b, Bigint *quotient_result,
                    Bigint *remainder_result)
 {
