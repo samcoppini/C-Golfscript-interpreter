@@ -49,7 +49,7 @@ typedef struct Item {
     Bigint int_val;     // Used for integers
     String str_val;     // Used for strings and blocks
     Array arr_val;      // Used for arrays
-    void (*function)(); // Used for builtin functions
+    void (*function)(void); // Used for builtin functions
   };
 } Item;
 
@@ -77,7 +77,7 @@ extern Array stack;
 extern Array bracket_stack;
 
 // array.c
-Array new_array();
+Array new_array(void);
 void free_array(Array *array);
 Array array_from_string(const String *str);
 void array_push(Array *arr, Item item);
@@ -103,7 +103,7 @@ void array_or(Array *array, const Array *to_or);
 void array_xor(Array *array, const Array *to_xor);
 
 // bigint.c
-Bigint new_bigint();
+Bigint new_bigint(void);
 Bigint bigint_with_digits(uint32_t num_digits);
 void free_bigint(Bigint *num);
 Bigint bigint_from_int64(int64_t int_val);
@@ -127,40 +127,40 @@ void bigint_divmod(const Bigint *a, const Bigint *b, Bigint *quotient_result,
 Bigint bigint_exponent(const Bigint *base, const Bigint *exponent);
 
 // builtin.c
-void builtin_abs();
-void builtin_ampersand();
-void builtin_asterisk();
-void builtin_at();
-void builtin_backslash();
-void builtin_backtick();
-void builtin_bar();
-void builtin_base();
-void builtin_caret();
-void builtin_comma();
-void builtin_do();
-void builtin_dollar_sign();
-void builtin_equal();
-void builtin_exclamation();
-void builtin_greater_than();
-void builtin_if();
-void builtin_lbracket();
-void builtin_less_than();
-void builtin_lparen();
-void builtin_minus();
-void builtin_percent();
-void builtin_period();
-void builtin_plus();
-void builtin_print();
-void builtin_question();
-void builtin_rand();
-void builtin_rbracket();
-void builtin_rparen();
-void builtin_semicolon();
-void builtin_slash();
-void builtin_until();
-void builtin_tilde();
-void builtin_while();
-void builtin_zip();
+void builtin_abs(void);
+void builtin_ampersand(void);
+void builtin_asterisk(void);
+void builtin_at(void);
+void builtin_backslash(void);
+void builtin_backtick(void);
+void builtin_bar(void);
+void builtin_base(void);
+void builtin_caret(void);
+void builtin_comma(void);
+void builtin_do(void);
+void builtin_dollar_sign(void);
+void builtin_equal(void);
+void builtin_exclamation(void);
+void builtin_greater_than(void);
+void builtin_if(void);
+void builtin_lbracket(void);
+void builtin_less_than(void);
+void builtin_lparen(void);
+void builtin_minus(void);
+void builtin_percent(void);
+void builtin_period(void);
+void builtin_plus(void);
+void builtin_print(void);
+void builtin_question(void);
+void builtin_rand(void);
+void builtin_rbracket(void);
+void builtin_rparen(void);
+void builtin_semicolon(void);
+void builtin_slash(void);
+void builtin_until(void);
+void builtin_tilde(void);
+void builtin_while(void);
+void builtin_zip(void);
 
 // error.c
 noreturn void error(const char *msg, ...);
@@ -169,10 +169,10 @@ noreturn void error(const char *msg, ...);
 Item make_integer(int64_t int_val);
 Item make_integer_from_bigint(const Bigint *bigint);
 Item make_string(const String *str_val);
-Item empty_string();
+Item empty_string(void);
 Item make_block(String str_val);
-Item make_array();
-Item make_builtin(void (*function)());
+Item make_array(void);
+Item make_builtin(void (*function)(void));
 Item make_copy(const Item *item);
 String get_literal(const Item *item);
 bool item_boolean(const Item *item);
@@ -186,33 +186,33 @@ String array_to_string(const Item *array);
 void coerce_types(Item *item1, Item *item2);
 
 // execute.c
-void init_interpreter();
-void end_interpreter();
+void init_interpreter(void);
+void end_interpreter(void);
 void stack_push(Item item);
-Item stack_pop();
+Item stack_pop(void);
 void execute_string(String *str);
 void repeat_block(Item *block, Bigint times);
 void execute_item(Item *item);
 
 // map.c
-Map new_map();
+Map new_map(void);
 void free_map(Map *map);
 void map_set(Map *map, String key, Item item);
 Item *map_get(Map *map, const String *key);
 
 // random.c
-void init_rng();
+void init_rng(void);
 Bigint get_randint(Bigint max_val);
 
 // set.c
-Set new_set();
+Set new_set(void);
 void free_set(Set *set);
 bool set_has(const Set *set, const Item *item);
 void set_add(Set *set, const Item *item);
 void set_remove(Set *set, const Item *item);
 
 // string.c
-String new_string();
+String new_string(void);
 void free_string(String *str);
 String copy_string(const String *str);
 String create_string(const char *str);
