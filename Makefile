@@ -13,7 +13,7 @@ all: $(OBJS)
 test: $(TESTS)
 
 tests/%.gs: FORCE
-	golf $@
+	./golf $@
 
 clean:
 	rm $(OBJS)
