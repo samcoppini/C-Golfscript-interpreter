@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -Wall -Wextra -Werror -Wno-comment -std=c11 -pedantic -O3
+CFLAGS= -Wall -Wextra -Werror -Wno-comment -std=c11 -pedantic -O3 -Wno-unused-result
 SOURCES=$(wildcard *.c)
 OBJS=$(SOURCES:.c=.o)
 TESTS=$(wildcard tests/*.gs)
